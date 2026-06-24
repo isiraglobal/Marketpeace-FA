@@ -12,7 +12,7 @@
     --text-muted: rgba(255, 255, 255, 0.5);
     --accent-blue: #0077b6;
     --accent-blue-glow: rgba(0, 119, 182, 0.4);
-    --bg-dark: #061530;
+    --bg-dark: #0c1b3a;
     --glass-x: 50%;
     --glass-y: 50%;
   }
@@ -87,9 +87,11 @@
     overflow: hidden;
     isolation: isolate;
     border-radius: 2rem;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--translate-y, 0px)) scale(var(--scale, 1));
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
                 box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     backface-visibility: hidden;
+    transform-style: preserve-3d;
   }
 
   .liquid-glass::before {
@@ -123,7 +125,8 @@
   }
 
   .liquid-glass:hover {
-    transform: translateY(-3px) scale(1.005);
+    --translate-y: -3px;
+    --scale: 1.005;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5),
                 0 0 40px rgba(0, 119, 182, 0.08);
   }
@@ -161,6 +164,78 @@
   .text-glow-blue {
     text-shadow: 0 0 20px rgba(0, 119, 182, 0.4),
                  0 0 60px rgba(0, 119, 182, 0.15);
+  }
+
+  .liquid-text-bg {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 119, 182, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+    padding: 0.35rem 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--translate-y, 0px)) scale(var(--scale, 1));
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s ease;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+
+  .liquid-text-bg:hover {
+    --translate-y: -1px;
+    --scale: 1.02;
+    box-shadow: 0 12px 36px rgba(0, 119, 182, 0.3);
+  }
+
+  @keyframes liquid-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .liquid-text-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(90deg, rgba(0, 119, 182, 0.25), rgba(0, 144, 224, 0.45), rgba(0, 119, 182, 0.25));
+    background-size: 200% 200%;
+    animation: liquid-flow 5s ease infinite;
+  }
+
+  @keyframes blob-float-1 {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(40px, -60px) scale(1.15); }
+    66% { transform: translate(-30px, 30px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+
+  @keyframes blob-float-2 {
+    0% { transform: translate(0px, 0px) scale(1); }
+    50% { transform: translate(-50px, 50px) scale(1.1); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+
+  @keyframes blob-float-3 {
+    0% { transform: translate(0px, 0px) scale(1); }
+    40% { transform: translate(60px, -30px) scale(0.85); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+
+  .animate-blob-1 {
+    animation: blob-float-1 18s infinite alternate ease-in-out;
+  }
+  .animate-blob-2 {
+    animation: blob-float-2 22s infinite alternate ease-in-out;
+  }
+  .animate-blob-3 {
+    animation: blob-float-3 16s infinite alternate ease-in-out;
   }
 
   .content-frame {

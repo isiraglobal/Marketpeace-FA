@@ -4,42 +4,128 @@ export default function useLiquidGlass() {
   const rafRef = useRef(null)
 
   useEffect(() => {
+    // Only run on desktops or devices with fine pointers
     const mediaQuery = window.matchMedia('(pointer: fine)')
     if (!mediaQuery.matches) return
 
-    const elements = new Set()
+    const elementStates = new Map()
+
+    const initElement = (el) => {
+      if (elementStates.has(el)) return
+      elementStates.set(el, {
+        targetX: 50,
+        targetY: 50,
+        currentX: 50,
+        currentY: 50,
+        vx: 0,
+        vy: 0,
+        hovered: false
+      })
+
+      const handleMouseEnter = () => {
+        const state = elementStates.get(el)
+        if (state) state.hovered = true
+      }
+
+      const handleMouseLeave = () => {
+        const state = elementStates.get(el)
+        if (state) {
+          state.hovered = false
+          state.targetX = 50
+          state.targetY = 50
+        }
+      }
+
+      const handleMouseMove = (e) => {
+        const state = elementStates.get(el)
+        if (!state || !state.hovered) return
+        const rect = el.getBoundingClientRect()
+        if (rect.width === 0 || rect.height === 0) return
+        state.targetX = ((e.clientX - rect.left) / rect.width) * 100
+        state.targetY = ((e.clientY - rect.top) / rect.height) * 100
+      }
+
+      el.addEventListener('mouseenter', handleMouseEnter, { passive: true })
+      el.addEventListener('mouseleave', handleMouseLeave, { passive: true })
+      el.addEventListener('mousemove', handleMouseMove, { passive: true })
+
+      elementStates.get(el).cleanup = () => {
+        el.removeEventListener('mouseenter', handleMouseEnter)
+        el.removeEventListener('mouseleave', handleMouseLeave)
+        el.removeEventListener('mousemove', handleMouseMove)
+      }
+    }
 
     const observer = new MutationObserver(() => {
       document.querySelectorAll(
-        '.liquid-glass, .liquid-glass-deep, .glass-card, .glass-btn, .glass-lens'
-      ).forEach(el => elements.add(el))
+        '.liquid-glass, .liquid-glass-deep, .glass-card, .glass-btn, .glass-lens, .liquid-text-bg'
+      ).forEach(el => initElement(el))
     })
 
-    observer.observe(document.body, { childList: true, subtree: true, attributes: false })
+    observer.observe(document.body, { childList: true, subtree: true })
 
     document.querySelectorAll(
-      '.liquid-glass, .liquid-glass-deep, .glass-card, .glass-btn, .glass-lens'
-    ).forEach(el => elements.add(el))
+      '.liquid-glass, .liquid-glass-deep, .glass-card, .glass-btn, .glass-lens, .liquid-text-bg'
+    ).forEach(el => initElement(el))
 
-    const handleMouseMove = (e) => {
-      rafRef.current = requestAnimationFrame(() => {
-        for (const el of elements) {
-          const rect = el.getBoundingClientRect()
-          if (rect.width === 0 || rect.height === 0) continue
-          const x = ((e.clientX - rect.left) / rect.width) * 100
-          const y = ((e.clientY - rect.top) / rect.height) * 100
-          el.style.setProperty('--glass-x', `${x}%`)
-          el.style.setProperty('--glass-y', `${y}%`)
+    // Physics constants
+    const spring = 0.08
+    const damping = 0.82
+
+    const updatePhysics = () => {
+      const isEnabled = !document.body.classList.contains('liquid-physics-disabled')
+
+      for (const [el, state] of elementStates.entries()) {
+        // Cleanup if detached
+        if (!document.body.contains(el)) {
+          if (state.cleanup) state.cleanup()
+          elementStates.delete(el)
+          continue
         }
-      })
+
+        if (isEnabled) {
+          // Spring integration
+          const ax = (state.targetX - state.currentX) * spring
+          const ay = (state.targetY - state.currentY) * spring
+          state.vx = (state.vx + ax) * damping
+          state.vy = (state.vy + ay) * damping
+          state.currentX += state.vx
+          state.currentY += state.vy
+
+          el.style.setProperty('--glass-x', `${state.currentX}%`)
+          el.style.setProperty('--glass-y', `${state.currentY}%`)
+
+          // 3D rotation tilt
+          const maxTilt = 8
+          const tiltX = ((state.currentY - 50) / 50) * maxTilt
+          const tiltY = -((state.currentX - 50) / 50) * maxTilt
+          
+          el.style.setProperty('--tilt-x', `${tiltX}deg`)
+          el.style.setProperty('--tilt-y', `${tiltY}deg`)
+        } else {
+          // Revert to center/defaults if disabled
+          state.currentX = 50
+          state.currentY = 50
+          state.vx = 0
+          state.vy = 0
+          el.style.removeProperty('--glass-x')
+          el.style.removeProperty('--glass-y')
+          el.style.removeProperty('--tilt-x')
+          el.style.removeProperty('--tilt-y')
+        }
+      }
+      rafRef.current = requestAnimationFrame(updatePhysics)
     }
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    rafRef.current = requestAnimationFrame(updatePhysics)
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
       observer.disconnect()
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      for (const [el, state] of elementStates.entries()) {
+        if (state.cleanup) state.cleanup()
+      }
+      elementStates.clear()
     }
   }, [])
 }

@@ -21,7 +21,6 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Success = lazy(() => import('./pages/Success'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Admin = lazy(() => import('./pages/Admin'));
-const BackgroundClouds = lazy(() => import('./components/BackgroundClouds'));
 
 function ScrollSetup() {
   const { pathname } = useLocation();
@@ -88,21 +87,19 @@ export default function App() {
   useLiquidGlass();
   return (
     <Router>
-      <div className="relative w-full bg-[#061530] text-white font-light">
+      <div className="relative w-full bg-transparent text-white font-light">
+        {/* Animated fluid blob background - Sunny Day Sky to Navy Blue */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-gradient-to-b from-[#60a5fa] via-[#1e3a8a] to-[#030712]">
+          <div className="absolute -top-[15%] left-[10%] w-[65vw] h-[65vw] rounded-full bg-white/20 blur-[130px] animate-blob-1"></div>
+          <div className="absolute top-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[#93c5fd]/30 blur-[120px] animate-blob-2"></div>
+          <div className="absolute -bottom-[10%] -left-[10%] w-[75vw] h-[75vw] rounded-full bg-[#0077b6]/25 blur-[140px] animate-blob-3"></div>
+        </div>
         <LoadingScreen />
         <ScrollSetup />
         <Cursor />
-        <ErrorBoundary fallback={
-          // Flat background colour — visually identical to the scene without clouds
-          <div className="fixed inset-0 pointer-events-none z-0" style={{ backgroundColor: '#0077b6' }} />
-        }>
-          <Suspense fallback={null}>
-            <BackgroundClouds />
-          </Suspense>
-        </ErrorBoundary>
         <Navbar />
         <Suspense fallback={
-          <div className="min-h-screen bg-[#061530] flex items-center justify-center">
+          <div className="min-h-screen bg-transparent flex items-center justify-center">
             <div className="flex gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#0077b6] animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="w-1.5 h-1.5 rounded-full bg-[#0077b6] animate-bounce" style={{ animationDelay: '120ms' }} />

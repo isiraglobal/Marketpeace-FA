@@ -130,7 +130,7 @@ export default function Admin() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen pt-40 px-6 flex flex-col items-center justify-center bg-[#061530]">
+      <div className="min-h-screen pt-40 px-6 flex flex-col items-center justify-center bg-transparent">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -182,7 +182,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen pt-32 sm:pt-40 px-4 sm:px-12 bg-[#061530] pb-32">
+    <div className="min-h-screen pt-32 sm:pt-40 px-4 sm:px-12 bg-transparent pb-32">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div>

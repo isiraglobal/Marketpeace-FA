@@ -9,6 +9,31 @@ export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const { scrollY } = useScroll();
 
+  const [physicsEnabled, setPhysicsEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('liquid-physics-enabled');
+      if (saved === 'false') {
+        document.body.classList.add('liquid-physics-disabled');
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const togglePhysics = () => {
+    setPhysicsEnabled(prev => {
+      const next = !prev;
+      if (next) {
+        document.body.classList.remove('liquid-physics-disabled');
+        localStorage.setItem('liquid-physics-enabled', 'true');
+      } else {
+        document.body.classList.add('liquid-physics-disabled');
+        localStorage.setItem('liquid-physics-enabled', 'false');
+      }
+      return next;
+    });
+  };
+
   React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -63,6 +88,17 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4 md:gap-6">
+          <button 
+            onClick={togglePhysics}
+            className={`px-3 py-2 rounded-lg font-black tracking-widest text-[8px] sm:text-[10px] uppercase transition-all shadow-lg flex items-center gap-1.5 ${
+              physicsEnabled 
+                ? 'bg-[#0077b6] text-white border border-[#0077b6]/30 btn-glow' 
+                : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'
+            }`}
+          >
+            <span className="text-[10px] sm:text-xs">💧</span>
+            <span className="hidden sm:inline">Physics</span>
+          </button>
           <Link to="/vendors">
             <button className="px-4 sm:px-6 py-2 bg-white text-[#061530] font-black rounded-lg tracking-[0.1em] sm:tracking-[0.2em] text-[8px] sm:text-[10px] uppercase hover:bg-[#0077b6] hover:text-white transition-all shadow-lg btn-glow">
               JOIN

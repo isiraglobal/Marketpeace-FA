@@ -55,8 +55,8 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full bg-[#061530]">
-      <div className="h-20 md:h-28 w-full"></div>
+    <div className="w-full bg-transparent">
+      <div className="h-10 md:h-16 w-full"></div>
 
       {/* HERO */}
       <section className="w-full flex flex-col items-center justify-center px-4 py-16 md:py-24">
@@ -87,7 +87,7 @@ export default function Home() {
             transition={{ delay: 1.6, duration: 1.5 }}
             className="mb-8 md:mb-12"
           >
-            <span className="text-[10px] sm:text-[10px] tracking-[0.4em] text-[#0077b6] font-black uppercase bg-[#0077b6]/10 px-4 py-2 rounded-full border border-[#0077b6]/20">The Infrastructure of Independence</span>
+            <span className="liquid-text-bg text-[10px] sm:text-[10px] tracking-[0.4em] text-[#0077b6] font-black uppercase">The Infrastructure of Independence</span>
           </motion.div>
 
           <h2 className="text-white text-sm sm:text-lg md:text-2xl lg:text-3xl lg:whitespace-nowrap tracking-[0.25em] font-black mb-8 md:mb-10 text-center uppercase italic leading-relaxed max-w-[90vw] sm:max-w-[80vw] lg:max-w-none">
@@ -149,7 +149,7 @@ export default function Home() {
       {/* ABOUT */}
       <section className="w-full flex flex-col items-center px-4 py-16 md:py-24">
         <div className="max-w-6xl w-full flex flex-col items-center text-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-14 shadow-lg">About Marketpeace</span>
+          <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-14">About Marketpeace</span>
           <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter mb-6 md:mb-12 italic uppercase leading-[0.95]">Who can be a vendor? <span className="not-italic text-[#0090e0]">Anyone</span> can be a vendor.</h2>
           <p className="text-white/60 text-[11px] sm:text-base md:text-lg lg:text-xl font-medium mb-8 md:mb-16 max-w-3xl leading-relaxed">
             Marketpeace is a platform that connects four pillars of the local economy into one thriving marketplace.
@@ -166,7 +166,7 @@ export default function Home() {
       {/* HOW IT WORKS */}
       <section className="w-full flex flex-col items-center px-4 py-16 md:py-24">
         <div className="max-w-6xl w-full flex flex-col items-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-14 shadow-lg">How it Works</span>
+          <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-14">How it Works</span>
           <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-8xl font-black text-white mb-8 md:mb-20 tracking-tighter text-center italic uppercase leading-[0.95]">From application to <span className="not-italic text-[#0090e0]">profit</span> in 3 steps</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10 w-full">
             <JourneyStep number="01" title="Apply" desc="Tell us about your brand or venue." />
@@ -182,7 +182,7 @@ export default function Home() {
         <div className="max-w-7xl w-full flex flex-col lg:flex-row gap-8 md:gap-20 items-center lg:items-start justify-center">
           <div className="w-full lg:w-[50%]">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] font-black uppercase inline-block shadow-lg">Vendor Application</span>
+              <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] font-black uppercase inline-block mb-4">Vendor Application</span>
               <span className="text-[#0077b6] bg-[#0077b6]/10 px-3 py-1 rounded-full tracking-[0.2em] text-[10px] font-black uppercase inline-block border border-[#0077b6]/20 animate-pulse">Limited Slots Remaining</span>
             </div>
             <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 md:mb-8 tracking-tighter uppercase italic leading-[0.95]">Your booth. Your crowd. <span className="not-italic text-[#0090e0]">Your commission.</span></h3>
@@ -208,7 +208,7 @@ export default function Home() {
                 </div>
               </Link>
               <Link to="/vendors" className="block group">
-                <div className="liquid-glass flex flex-col h-full p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border-[#0077b6]/40 group-hover:border-[#0077b6]/80 transition-all relative cursor-pointer bg-[#0077b6]/5 shadow-[0_0_30px_rgba(0,119,182,0.15)] group-hover:shadow-[0_0_40px_rgba(0,119,182,0.3)]">
+                <div className="liquid-glass !overflow-visible flex flex-col h-full p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border-[#0077b6]/40 group-hover:border-[#0077b6]/80 transition-all relative cursor-pointer bg-[#0077b6]/5 shadow-[0_0_30px_rgba(0,119,182,0.15)] group-hover:shadow-[0_0_40px_rgba(0,119,182,0.3)]">
                   <div className="absolute -top-3 right-6 bg-[#0077b6] text-white text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest btn-glow shadow-lg">Most Popular</div>
                   <div className="flex flex-col gap-1 mb-6 md:mb-8">
                     <div className="flex justify-between items-center">
@@ -266,8 +266,8 @@ export default function Home() {
 
 function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickCheckout }) {
   return (
-    <div className="w-full bg-[#061530]">
-      <div className="h-20 md:h-28 w-full"></div>
+    <div className="w-full bg-transparent">
+      <div className="h-10 md:h-16 w-full"></div>
       {/* Hero */}
       <section className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
         <div className="flex flex-nowrap items-center justify-center mb-6 w-full max-w-lg mx-auto">
@@ -283,7 +283,7 @@ function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickChec
             </motion.div>
           ))}
         </div>
-        <span className="text-[10px] tracking-[0.4em] text-[#0077b6] font-black uppercase bg-[#0077b6]/10 px-4 py-2 rounded-full border border-[#0077b6]/20 mb-6">The Infrastructure of Independence</span>
+        <span className="liquid-text-bg text-[10px] tracking-[0.4em] text-[#0077b6] font-black uppercase mb-6">The Infrastructure of Independence</span>
         <h2 className="text-white text-sm tracking-[0.25em] font-black mb-6 text-center uppercase italic leading-relaxed max-w-[90vw]">
           "We found <span className="text-[#0077b6] not-italic">peace</span>, by having a <span className="text-white border-b-2 border-[#0077b6] not-italic">piece</span> of the market."
         </h2>
@@ -335,7 +335,7 @@ function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickChec
       {/* About */}
       <section className="flex flex-col items-center px-4 py-10">
         <div className="max-w-6xl w-full flex flex-col items-center text-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] font-black uppercase mb-4 shadow-lg">About Marketpeace</span>
+          <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] font-black uppercase mb-4">About Marketpeace</span>
           <h2 className="text-2xl font-black tracking-tighter mb-4 italic uppercase leading-[0.95]">Who can be a vendor? <span className="not-italic text-[#0090e0]">Anyone</span> can be a vendor.</h2>
           <p className="text-white/60 text-[11px] font-medium mb-6 max-w-3xl leading-relaxed">
             Marketpeace is a platform that connects four pillars of the local economy into one thriving marketplace.
@@ -352,7 +352,7 @@ function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickChec
       {/* How it Works */}
       <section className="flex flex-col items-center px-4 py-10">
         <div className="max-w-6xl w-full flex flex-col items-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] font-black uppercase mb-4 shadow-lg">How it Works</span>
+          <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] font-black uppercase mb-4">How it Works</span>
           <h3 className="text-2xl font-black text-white mb-6 tracking-tighter text-center italic uppercase leading-[0.95]">From application to <span className="not-italic text-[#0090e0]">profit</span> in 3 steps</h3>
           <div className="grid grid-cols-1 gap-4 w-full">
             <JourneyStep number="01" title="Apply" desc="Tell us about your brand or venue." />
@@ -368,7 +368,7 @@ function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickChec
         <div className="max-w-7xl w-full flex flex-col gap-6 items-center">
           <div className="w-full">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] font-black uppercase shadow-lg">Vendor Application</span>
+              <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] font-black uppercase mb-4">Vendor Application</span>
               <span className="text-[#0077b6] bg-[#0077b6]/10 px-3 py-1 rounded-full tracking-[0.2em] text-[10px] font-black uppercase border border-[#0077b6]/20 animate-pulse">Limited Slots</span>
             </div>
             <h3 className="text-2xl font-black text-white mb-4 tracking-tighter uppercase italic leading-[0.95]">Your booth. Your crowd. <span className="not-italic text-[#0090e0]">Your commission.</span></h3>
@@ -391,7 +391,7 @@ function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickChec
                 </div>
               </Link>
               <Link to="/vendors" className="block group">
-                <div className="liquid-glass flex flex-col p-6 rounded-[1.5rem] border-[#0077b6]/40 group-hover:border-[#0077b6]/80 transition-all relative bg-[#0077b6]/5">
+                <div className="liquid-glass !overflow-visible flex flex-col p-6 rounded-[1.5rem] border-[#0077b6]/40 group-hover:border-[#0077b6]/80 transition-all relative bg-[#0077b6]/5">
                   <div className="absolute -top-3 right-4 bg-[#0077b6] text-white text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-lg">Most Popular</div>
                   <div className="flex justify-between items-center mb-4">
                     <h5 className="font-black text-sm tracking-tight italic uppercase title text-[#0077b6]">Flagship</h5>
