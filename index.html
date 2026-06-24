@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SECURITY (MED-1): Content Security Policy
+         Restricts resource origins to prevent XSS and data injection attacks.
+         - default-src 'self': Only load resources from our own origin by default
+         - script-src 'self' 'unsafe-inline': React/Vite requires unsafe-inline for dev;
+           In production, use nonces or hashes and remove 'unsafe-inline'
+         - style-src 'self' 'unsafe-inline' fonts.googleapis.com: Allow Google Fonts CSS
+         - font-src fonts.gstatic.com: Allow Google Fonts files
+         - img-src 'self' data: blob:: Allow our own images and base64/blob URLs
+         - connect-src 'self' https://api.stripe.com: Only allow fetch() to our API and Stripe
+         - frame-src https://js.stripe.com: Stripe's checkout iframe
+         - object-src 'none': Blocks Flash and plugin exploitation vectors
+         - base-uri 'self': Prevents base tag injection
+         - form-action 'self' https://checkout.stripe.com: Forms only submit to our own origin or Stripe
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://js.stripe.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: blob: https://rawcdn.githack.com https://raw.githack.com;
+      connect-src 'self' https://api.stripe.com https://rawcdn.githack.com https://raw.githack.com;
+      frame-src https://js.stripe.com https://checkout.stripe.com;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self' https://checkout.stripe.com;
+    " />
+
+    <!-- SECURITY (MED-2): X-Content-Type-Options
+         Prevents MIME-type sniffing which can lead to script injection via
+         crafted responses with wrong content-type headers. -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+
+    <!-- SECURITY (MED-2): Referrer Policy
+         Limits referrer information sent to external sites, preventing
+         leakage of URL parameters (like transaction_id on /success). -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- SECURITY (LOW-3): Permissions Policy
+         Explicitly deny access to sensitive browser APIs not used by this app. -->
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(self)" />
+
+    <title>MARKETPEACE | Infrastructure of Independence</title>
+    <meta name="description" content="MARKETPEACE — The vendor-event marketplace connecting small businesses, cool venues, and the communities that love them." />
+    <link rel="icon" type="image/png" href="/assets/logo.png" />
+    <link rel="apple-touch-icon" href="/assets/logo.png" />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:title" content="MARKETPEACE | Infrastructure of Independence" />
+    <meta property="og:description" content="The vendor-event marketplace connecting small businesses, cool venues, and the communities that love them." />
+    <meta property="og:image" content="https://marketpeace.com/assets/logo.png" />
+    <meta property="og:url" content="https://marketpeace.com" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MARKETPEACE | Infrastructure of Independence" />
+    <meta name="twitter:description" content="The vendor-event marketplace connecting small businesses, cool venues, and the communities that love them." />
+    <meta name="twitter:image" content="https://marketpeace.com/assets/logo.png" />
+  </head>
+  <body style="background-color: #061530; margin: 0; padding: 0; color: white; min-height: 100vh;">
+    <div id="root" style="width: 100%; min-height: 100vh;">
+      <div style="font-family: sans-serif; text-align: center; display: flex; align-items: center; justify-content: center; height: 100vh; width: 100%;">
+        <div>
+          <h1 style="letter-spacing: 0.5em; font-size: 14px; opacity: 0.5;">MARKETPEACE</h1>
+          <p style="letter-spacing: 0.2em; font-size: 10px; opacity: 0.3;">INITIALIZING...</p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

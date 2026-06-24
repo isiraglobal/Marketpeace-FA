@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Allow: /vendors
+Allow: /attendees
+Allow: /venues
+Allow: /cities
+Allow: /contact
+Allow: /legal
+Allow: /privacy
+Allow: /terms
+
+# SECURITY (MED-10): Disallow /success from indexing.
+# This page shows transaction IDs in URL params which should not be indexed.
+Disallow: /success
+
+# SECURITY: Disallow Admin Portal from indexing
+Disallow: /admin
+
+# Disallow API endpoints from indexing
+Disallow: /api/
+
+Sitemap: https://marketpeace.com/sitemap.xml
