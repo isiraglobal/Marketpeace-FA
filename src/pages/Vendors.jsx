@@ -217,7 +217,7 @@ function TierCard({ title, price, desc, features, highlighted = false }) {
     <div className={`flex flex-col p-8 md:p-10 h-full liquid-glass ${highlighted ? 'border-[#0077b6]/40 shadow-[0_0_40px_rgba(0,119,182,0.15)] scale-105 z-10 premium-border' : ''}`}>
       <span className={`text-[10px] font-bold tracking-[0.3em] uppercase mb-4 amount ${highlighted ? 'text-[#0077b6]' : 'text-white/40'}`}>{price}</span>
       <h4 className="text-2xl font-black text-white mb-4 tracking-tight title uppercase italic">{title}</h4>
-      <p className="text-white/40 text-sm font-medium leading-relaxed mb-8 h-20 overflow-hidden description">{desc}</p>
+      <p className="text-white/40 text-sm font-medium leading-relaxed mb-8 description">{desc}</p>
       <div className="flex flex-col gap-3 mt-auto">
         {features.map((f, i) => (
           <div key={i} className="flex items-center gap-3 text-[11px] text-white/50 font-medium description">

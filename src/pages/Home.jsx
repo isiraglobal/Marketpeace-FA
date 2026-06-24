@@ -84,16 +84,12 @@ export default function Home() {
   const opacitySection3 = useTransform(scrollYProgress, [0.65, 0.75, 0.9], [0, 1, 1]);
   const scaleSection3 = useTransform(scrollYProgress, [0.65, 0.75], [0.8, 1]);
 
-  if (isMobile) {
-    return <MobileHome cityNodes={cityNodes} checkoutLoading={checkoutLoading} checkoutError={checkoutError} handleQuickCheckout={handleQuickCheckout} />;
-  }
-
   return (
     <div className="w-full bg-[#061530]">
       <div
         ref={containerRef}
         className="relative w-full"
-        style={{ minHeight: '600vh' }}
+        style={{ minHeight: isMobile ? '400vh' : '600vh' }}
       >
 
         <div className="h-20 md:h-28 w-full"></div>
@@ -301,7 +297,7 @@ export default function Home() {
                   </Link>
                 </div>
 
-                <div className="pt-6 border-t border-white/10 hidden sm:block">
+                <div className="pt-6 border-t border-white/10">
                   <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
                     <div className="flex items-center gap-2">
                       <Zap className="w-3 h-3 text-[#0077b6]" />
@@ -336,183 +332,6 @@ export default function Home() {
         </div>
       </div>
 
-      <HomeSections cityNodes={cityNodes} />
-    </div>
-  );
-}
-
-function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickCheckout }) {
-  return (
-    <div className="w-full bg-[#061530]">
-      <div className="h-20 md:h-28 w-full"></div>
-      {/* Hero */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
-        <div className="flex flex-nowrap items-center justify-center mb-6 w-full max-w-lg mx-auto">
-          {letters.map((l, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 3, filter: 'blur(30px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1], delay: 0.8 + i * 0.06 }}
-              className="relative w-[8vw] max-w-[55px] h-[10vw] max-h-[80px] flex items-center justify-center m-[-0.3vw]"
-            >
-              <img src={l.src} alt={l.char} loading="lazy" className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]" />
-            </motion.div>
-          ))}
-        </div>
-        <span className="text-[10px] tracking-[0.4em] text-[#0077b6] font-black uppercase bg-[#0077b6]/10 px-4 py-2 rounded-full border border-[#0077b6]/20 mb-6">The Infrastructure of Independence</span>
-        <h2 className="text-white text-sm tracking-[0.25em] font-black mb-6 text-center uppercase italic leading-relaxed max-w-[90vw]">
-          "We found <span className="text-[#0077b6] not-italic">peace</span>, by having a <span className="text-white border-b-2 border-[#0077b6] not-italic">piece</span> of the market."
-        </h2>
-        <p className="text-white/60 text-[10px] tracking-[0.15em] font-medium max-w-2xl mb-8 text-center uppercase leading-relaxed">
-          The vendor-event marketplace connecting small businesses, cool venues, and the communities that love them.
-        </p>
-        <div className="flex flex-col items-center gap-3 w-full max-w-xs">
-          <Link to="/vendors" className="w-full">
-            <button className="w-full py-4 bg-white text-[#061530] rounded-xl text-[12px] font-black tracking-[0.2em] hover:bg-white/90 transition-all shadow-2xl uppercase btn-glow">Apply as Vendor</button>
-          </Link>
-          <Link to="/venues" className="w-full">
-            <button className="w-full py-4 liquid-glass text-white rounded-xl text-[12px] font-black tracking-[0.2em] transition-all uppercase">Partner Your Venue</button>
-          </Link>
-        </div>
-
-        {/* Quick checkout buttons */}
-        <div className="flex flex-col items-center gap-2 w-full max-w-xs mt-4">
-          <button type="button" disabled={checkoutLoading} onClick={() => handleQuickCheckout({ type: 'Vendor', tier: 'Standard' })} className="w-full px-5 py-3 rounded-2xl bg-[#0077b6] text-white font-black text-[11px] uppercase tracking-[0.2em] transition-all hover:bg-[#0090e0] disabled:opacity-50">
-            {checkoutLoading ? 'Opening checkout...' : 'Pay Standard Booth $250'}
-          </button>
-          <button type="button" disabled={checkoutLoading} onClick={() => handleQuickCheckout({ type: 'Vendor', tier: 'Flagship' })} className="w-full px-5 py-3 rounded-2xl bg-white text-[#061530] font-black text-[11px] uppercase tracking-[0.2em] transition-all hover:bg-white/90 disabled:opacity-50">
-            {checkoutLoading ? 'Opening checkout...' : 'Pay Flagship Booth $500'}
-          </button>
-          <button type="button" disabled={checkoutLoading} onClick={() => handleQuickCheckout({ type: 'Attendee', tier: 'Regular' })} className="w-full px-5 py-3 rounded-2xl border border-white/15 text-white font-black text-[11px] uppercase tracking-[0.2em] transition-all hover:border-white/40 hover:bg-white/5 disabled:opacity-50">
-            {checkoutLoading ? 'Opening checkout...' : 'Pay Event Entry $5'}
-          </button>
-          {checkoutError && <p className="text-red-400 text-[11px] text-center">{checkoutError}</p>}
-        </div>
-
-        {/* Pricing bar */}
-        <div className="flex items-center gap-4 py-6 mt-4 border-t border-white/5 w-full justify-center">
-          <div className="flex flex-col items-center">
-            <span className="text-white font-black text-lg tracking-tighter italic amount">$250</span>
-            <span className="text-white/30 text-[9px] tracking-[0.2em] uppercase font-bold">Standard</span>
-          </div>
-          <div className="w-[1px] h-5 bg-white/10" />
-          <div className="flex flex-col items-center">
-            <span className="text-white font-black text-lg tracking-tighter italic amount">$500</span>
-            <span className="text-white/30 text-[9px] tracking-[0.2em] uppercase font-bold">Flagship</span>
-          </div>
-          <div className="w-[1px] h-5 bg-white/10" />
-          <div className="flex flex-col items-center">
-            <span className="text-white font-black text-lg tracking-tighter italic amount">$5</span>
-            <span className="text-white/30 text-[9px] tracking-[0.2em] uppercase font-bold">Door Entry</span>
-          </div>
-        </div>
-      </section>
-
-      {/* About */}
-      <section className="flex flex-col items-center px-4 py-10">
-        <div className="max-w-6xl w-full flex flex-col items-center text-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] font-black uppercase mb-4 shadow-lg">About Marketpeace</span>
-          <h2 className="text-2xl font-black tracking-tighter mb-4 italic uppercase leading-[0.95]">Who can be a vendor? <span className="not-italic text-[#0090e0]">Anyone</span> can be a vendor.</h2>
-          <p className="text-white/60 text-[11px] font-medium mb-6 max-w-3xl leading-relaxed">
-            Marketpeace is a platform that connects four pillars of the local economy into one thriving marketplace.
-          </p>
-          <div className="grid grid-cols-2 gap-3 text-left w-full">
-            <PillarCard title="Vendors" desc="Sell your products to a hungry local crowd." icon={<Zap className="w-4 h-4 text-[#0077b6]" />} />
-            <PillarCard title="Venues" desc="Turn your space into a destination." icon={<MapPin className="w-4 h-4 text-[#0077b6]" />} />
-            <PillarCard title="Attendees" desc="Discover brands and experiences near you." icon={<Users className="w-4 h-4 text-[#0077b6]" />} />
-            <PillarCard title="Partners" desc="Grow with the marketplace ecosystem." icon={<Ticket className="w-4 h-4 text-[#0077b6]" />} />
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works */}
-      <section className="flex flex-col items-center px-4 py-10">
-        <div className="max-w-6xl w-full flex flex-col items-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] font-black uppercase mb-4 shadow-lg">How it Works</span>
-          <h3 className="text-2xl font-black text-white mb-6 tracking-tighter text-center italic uppercase leading-[0.95]">From application to <span className="not-italic text-[#0090e0]">profit</span> in 3 steps</h3>
-          <div className="grid grid-cols-1 gap-4 w-full">
-            <JourneyStep number="01" title="Apply" desc="Tell us about your brand or venue." />
-            <JourneyStep number="02" title="Selected" desc="Get picked for a matching vibe." />
-            <JourneyStep number="03" title="Promoted" desc="We handle marketing, you handle business." />
-          </div>
-          <p className="mt-8 text-[#0077b6] font-black tracking-[0.3em] uppercase text-[11px] animate-pulse">Bonus: Profit & Repeat.</p>
-        </div>
-      </section>
-
-      {/* Application */}
-      <section className="flex flex-col items-center px-4 py-10">
-        <div className="max-w-7xl w-full flex flex-col gap-6 items-center">
-          <div className="w-full">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[10px] font-black uppercase shadow-lg">Vendor Application</span>
-              <span className="text-[#0077b6] bg-[#0077b6]/10 px-3 py-1 rounded-full tracking-[0.2em] text-[10px] font-black uppercase border border-[#0077b6]/20 animate-pulse">Limited Slots</span>
-            </div>
-            <h3 className="text-2xl font-black text-white mb-4 tracking-tighter uppercase italic leading-[0.95]">Your booth. Your crowd. <span className="not-italic text-[#0090e0]">Your commission.</span></h3>
-            <p className="text-white/60 text-[11px] leading-relaxed font-medium mb-6 max-w-2xl">
-              Choose the tier that fits your growth strategy. Every vendor gets access to our premium infrastructure. <span className="text-white">Secure your position today.</span>
-            </p>
-            <div className="grid grid-cols-1 gap-4 mb-8">
-              <Link to="/vendors" className="block group">
-                <div className="liquid-glass flex flex-col p-6 rounded-[1.5rem] group-hover:border-white/40 transition-all">
-                  <div className="flex justify-between items-center mb-4">
-                    <h5 className="font-black text-sm tracking-tight italic uppercase title">Standard</h5>
-                    <span className="text-white font-black italic amount text-lg">$250</span>
-                  </div>
-                  <span className="text-white/40 text-[10px] uppercase font-bold tracking-widest mb-4">Core Infrastructure</span>
-                  <ul className="text-white/60 text-[10px] font-medium space-y-3">
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0077b6] rounded-sm shrink-0" /><span className="leading-tight">8x6 Space + 6ft Table & 2 Chairs</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0077b6] rounded-sm shrink-0" /><span className="leading-tight">Standard Floor Placement</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0077b6] rounded-sm shrink-0" /><span className="leading-tight">General Social Mention</span></li>
-                  </ul>
-                </div>
-              </Link>
-              <Link to="/vendors" className="block group">
-                <div className="liquid-glass flex flex-col p-6 rounded-[1.5rem] border-[#0077b6]/40 group-hover:border-[#0077b6]/80 transition-all relative bg-[#0077b6]/5">
-                  <div className="absolute -top-3 right-4 bg-[#0077b6] text-white text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-lg">Most Popular</div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h5 className="font-black text-sm tracking-tight italic uppercase title text-[#0077b6]">Flagship</h5>
-                    <span className="text-white font-black italic amount text-lg">$500</span>
-                  </div>
-                  <span className="text-[#0077b6]/70 text-[10px] uppercase font-bold tracking-widest mb-4">Maximum Visibility</span>
-                  <ul className="text-white/60 text-[10px] font-medium space-y-3">
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0077b6] rounded-sm shrink-0" /><span className="leading-tight text-white">Prime Corner Placement</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0077b6] rounded-sm shrink-0" /><span className="leading-tight">Featured Brand Promotion</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0077b6] rounded-sm shrink-0" /><span className="leading-tight">Professional Content Pack</span></li>
-                  </ul>
-                </div>
-              </Link>
-            </div>
-          </div>
-          {/* Benefits row - was missing on mobile */}
-          <div className="w-full pt-4 border-t border-white/10">
-            <div className="flex items-center justify-around gap-4">
-              <div className="flex items-center gap-2">
-                <Zap className="w-3 h-3 text-[#0077b6]" />
-                <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">Marketing Support</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-3 h-3 text-[#0077b6]" />
-                <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">Data Ownership</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Camera className="w-3 h-3 text-[#0077b6]" />
-                <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">Pro Photography</span>
-              </div>
-            </div>
-          </div>
-          <div className="w-full liquid-glass p-6 shadow-2xl relative overflow-hidden border-[#0077b6]/20">
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0077b6]/10 rounded-full blur-[100px] pointer-events-none"></div>
-            <h4 className="text-xl text-white font-black mb-2 tracking-tighter uppercase italic">Secure Your <span className="not-italic text-[#0090e0]">Piece</span></h4>
-            <p className="text-white/50 mb-6 font-medium leading-relaxed text-[11px]">Applications reviewed within 48h. Deposit locks your spot in the rollout.</p>
-            <Link to="/vendors" className="block w-full">
-              <button className="w-full py-4 bg-white text-[#061530] font-black rounded-xl tracking-[0.2em] text-[12px] uppercase hover:bg-white/90 transition-all shadow-lg btn-glow">SECURE YOUR SPOT</button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Rest of the sections - referral, gallery, etc. */}
       <HomeSections cityNodes={cityNodes} />
     </div>
   );
