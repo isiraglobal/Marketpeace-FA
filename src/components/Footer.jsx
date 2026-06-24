@@ -25,14 +25,14 @@ export default function Footer() {
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 sm:gap-x-8 md:gap-x-16 gap-y-4 sm:gap-y-6 md:gap-y-8 text-center items-center justify-center">
-          <Link to="/vendors" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Vendors</Link>
-          <Link to="/attendees" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Tickets</Link>
-          <Link to="/cities" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Cities</Link>
-          <Link to="/venues" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Venues</Link>
-          <Link to="/privacy" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Privacy</Link>
-          <Link to="/terms" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Terms</Link>
-          <Link to="/contact" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Contact</Link>
-          <Link to="/legal" className="text-white/40 hover:text-white transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Legal</Link>
+          <Link to="/vendors" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Vendors</Link>
+          <Link to="/attendees" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Tickets</Link>
+          <Link to="/cities" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Cities</Link>
+          <Link to="/venues" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Venues</Link>
+          <Link to="/privacy" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Privacy</Link>
+          <Link to="/terms" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Terms</Link>
+          <Link to="/contact" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Contact</Link>
+          <Link to="/legal" className="text-white/40 hover:text-[#0077b6] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Legal</Link>
         </div>
       </div>
 

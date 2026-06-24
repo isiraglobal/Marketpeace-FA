@@ -321,7 +321,7 @@ export default function Home() {
 
               <div className="w-full lg:w-[40%] flex justify-center lg:justify-end">
                 <div className="liquid-glass p-6 md:p-12 shadow-2xl hover:scale-[1.01] transition-all duration-500 relative overflow-hidden group w-full max-w-md border-[#0077b6]/20">
-                  <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#0690d4]/10 rounded-full blur-[100px] pointer-events-none"></div>
+                  <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#0077b6]/10 rounded-full blur-[100px] pointer-events-none"></div>
                   <h4 className="text-xl md:text-3xl text-white font-black mb-2 md:mb-4 tracking-tighter uppercase italic">Secure Your <span className="not-italic text-[#0090e0]">Piece</span></h4>
                   <p className="text-white/50 mb-6 md:mb-8 font-medium leading-relaxed text-[11px] md:text-base">Applications reviewed within 48h. Deposit locks your spot in the rollout.</p>
                   <Link to="/vendors" className="block w-full">
@@ -502,7 +502,7 @@ function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickChec
             </div>
           </div>
           <div className="w-full liquid-glass p-6 shadow-2xl relative overflow-hidden border-[#0077b6]/20">
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0690d4]/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0077b6]/10 rounded-full blur-[100px] pointer-events-none"></div>
             <h4 className="text-xl text-white font-black mb-2 tracking-tighter uppercase italic">Secure Your <span className="not-italic text-[#0090e0]">Piece</span></h4>
             <p className="text-white/50 mb-6 font-medium leading-relaxed text-[11px]">Applications reviewed within 48h. Deposit locks your spot in the rollout.</p>
             <Link to="/vendors" className="block w-full">
@@ -603,7 +603,7 @@ function HomeSections({ cityNodes }) {
       <section className="w-full py-10 md:py-16 px-4 md:px-6 bg-[#0077b6]/5">
         <div className="max-w-4xl w-full mx-auto liquid-glass p-6 md:p-10 text-center shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#0077b6]/10 blur-[100px] -mr-24 -mt-24"></div>
-          <h3 className="text-3xl font-black text-white mb-6 tracking-tighter uppercase italic leading-[0.95]">Ready for <span className="not-italic text-[#0077b6]">Rollout?</span></h3>
+          <h3 className="text-3xl font-black text-white mb-6 tracking-tighter uppercase italic leading-[0.95]">Ready for <span className="not-italic text-[#0090e0]">Rollout?</span></h3>
           <p className="text-white/50 text-base font-medium mb-8 leading-relaxed">Submit your inquiry and initiate the synchronization process.</p>
           <Link to="/contact">
             <button className="py-4 px-10 bg-white text-[#061530] font-black rounded-xl tracking-[0.3em] uppercase hover:bg-[#0077b6] hover:text-white transition-all text-[10px] btn-glow">Go to Contact Page</button>

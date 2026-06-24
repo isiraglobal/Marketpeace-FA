@@ -5,7 +5,7 @@ import { fetchCheckoutSession, submitForm } from '../utils/stripeCheckout';
 
 function AttendeeFeature({ title, desc, highlighted, wide }) {
   return (
-    <div className={`flex flex-col gap-4 p-6 md:p-8 liquid-glass transition-all backdrop-blur-sm ${wide ? 'w-full' : ''} ${highlighted ? 'border-[#0690d4]/30 shadow-xl' : ''}`}>
+    <div className={`flex flex-col gap-4 p-6 md:p-8 liquid-glass transition-all backdrop-blur-sm ${wide ? 'w-full' : ''} ${highlighted ? 'border-[#0077b6]/30 shadow-xl' : ''}`}>
       <div>
         <h4 className="text-white font-black text-base md:text-lg mb-1 md:mb-2 tracking-tight italic uppercase title">{title}</h4>
         <p className="text-white/50 text-xs md:text-sm leading-relaxed font-medium description">{desc}</p>
@@ -87,7 +87,7 @@ export default function Attendees() {
         </div>
 
         <div className="lg:col-span-5 liquid-glass p-4 sm:p-6 md:p-12 shadow-2xl relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0690d4]/20 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0077b6]/20 rounded-full blur-[80px] pointer-events-none"></div>
           <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-white mb-4 tracking-tighter uppercase italic leading-[0.9] title">Get Your <span className="not-italic text-[#0090e0]">Tickets</span></h3>
           <p className="text-white/50 text-sm mb-8 md:mb-10 font-medium leading-relaxed description">Secure your spot at our next event. Early birds get exclusive perks.</p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 md:gap-8">
@@ -116,7 +116,7 @@ export default function Attendees() {
       </div>
 
       <div className="max-w-5xl w-full liquid-glass p-8 md:p-16 text-center relative overflow-hidden mb-8">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#0690d4]/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#0077b6]/10 rounded-full blur-[100px] pointer-events-none"></div>
         <h2 className="text-2xl md:text-5xl font-black mb-4 md:mb-6 tracking-tighter uppercase italic leading-[0.9] title">Upcoming <span className="not-italic text-[#0090e0]">Events</span></h2>
         <p className="text-white/50 text-base md:text-xl font-medium mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed px-4 description">
           We're launching across NY, DC, and Atlanta. Find an event near you and join the community.

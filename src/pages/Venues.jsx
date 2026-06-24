@@ -50,7 +50,7 @@ export default function Venues() {
         </div>
 
         <div className="lg:col-span-5 liquid-glass p-6 md:p-12 shadow-2xl relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0690d4]/20 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0077b6]/20 rounded-full blur-[80px] pointer-events-none"></div>
           <h3 className="text-2xl md:text-3xl font-black mb-4 tracking-tight uppercase italic text-white title">Partner With Us</h3>
           <p className="text-white/50 text-sm mb-8 md:mb-10 font-medium leading-relaxed description">Let's discuss how we can work together.</p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5">

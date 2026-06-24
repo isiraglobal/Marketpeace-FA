@@ -46,7 +46,7 @@ export default function Navbar() {
         }}
         animate={hidden ? "hidden" : "visible"}
         transition={{ duration: 0.35, ease: "easeInOut" }}
-        className="fixed top-0 left-0 w-full z-[100] px-4 sm:px-6 md:px-12 py-3 sm:py-4 md:py-6 flex items-center justify-between bg-[#061530]/60 backdrop-blur-3xl border-b border-white/5 shadow-2xl"
+        className="fixed top-0 left-0 w-full z-[100] px-4 sm:px-6 md:px-12 py-3 sm:py-4 md:py-6 flex items-center justify-between bg-[#061530]/80 backdrop-blur-3xl border-b border-white/5 shadow-2xl"
         style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
       >
         <div className="flex items-center gap-6 sm:gap-10 md:gap-12">
@@ -102,7 +102,7 @@ export default function Navbar() {
             className="fixed inset-0 z-[90] bg-[#061530] flex flex-col items-center justify-center p-8 lg:hidden"
           >
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0690d4]/10 rounded-full blur-[120px]"></div>
+              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0077b6]/10 rounded-full blur-[120px]"></div>
               <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[120px]"></div>
             </div>
 

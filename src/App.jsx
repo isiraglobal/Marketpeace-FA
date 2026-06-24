@@ -91,7 +91,7 @@ export default function App() {
         <Cursor />
         <ErrorBoundary fallback={
           // Flat background colour — visually identical to the scene without clouds
-          <div className="fixed inset-0 pointer-events-none z-0" style={{ backgroundColor: '#0690d4' }} />
+          <div className="fixed inset-0 pointer-events-none z-0" style={{ backgroundColor: '#0077b6' }} />
         }>
           <Suspense fallback={null}>
             <BackgroundClouds />
