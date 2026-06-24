@@ -85,7 +85,7 @@ export default function Home() {
   const scaleSection3 = useTransform(scrollYProgress, [0.65, 0.75], [0.8, 1]);
 
   if (isMobile) {
-    return <MobileHome cityNodes={cityNodes} />;
+    return <MobileHome cityNodes={cityNodes} checkoutLoading={checkoutLoading} checkoutError={checkoutError} handleQuickCheckout={handleQuickCheckout} />;
   }
 
   return (
@@ -341,7 +341,7 @@ export default function Home() {
   );
 }
 
-function MobileHome({ cityNodes }) {
+function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickCheckout }) {
   return (
     <div className="w-full bg-[#061530]">
       <div className="h-20 md:h-28 w-full"></div>
@@ -369,11 +369,43 @@ function MobileHome({ cityNodes }) {
         </p>
         <div className="flex flex-col items-center gap-3 w-full max-w-xs">
           <Link to="/vendors" className="w-full">
-            <button className="w-full py-4 bg-white text-[#061530] rounded-xl text-[10px] font-black tracking-[0.2em] hover:bg-white/90 transition-all shadow-2xl uppercase btn-glow">Apply as Vendor</button>
+            <button className="w-full py-4 bg-white text-[#061530] rounded-xl text-[12px] font-black tracking-[0.2em] hover:bg-white/90 transition-all shadow-2xl uppercase btn-glow">Apply as Vendor</button>
           </Link>
           <Link to="/venues" className="w-full">
-            <button className="w-full py-4 liquid-glass text-white rounded-xl text-[10px] font-black tracking-[0.2em] transition-all uppercase">Partner Your Venue</button>
+            <button className="w-full py-4 liquid-glass text-white rounded-xl text-[12px] font-black tracking-[0.2em] transition-all uppercase">Partner Your Venue</button>
           </Link>
+        </div>
+
+        {/* Quick checkout buttons */}
+        <div className="flex flex-col items-center gap-2 w-full max-w-xs mt-4">
+          <button type="button" disabled={checkoutLoading} onClick={() => handleQuickCheckout({ type: 'Vendor', tier: 'Standard' })} className="w-full px-5 py-3 rounded-2xl bg-[#0077b6] text-white font-black text-[11px] uppercase tracking-[0.2em] transition-all hover:bg-[#0090e0] disabled:opacity-50">
+            {checkoutLoading ? 'Opening checkout...' : 'Pay Standard Booth $250'}
+          </button>
+          <button type="button" disabled={checkoutLoading} onClick={() => handleQuickCheckout({ type: 'Vendor', tier: 'Flagship' })} className="w-full px-5 py-3 rounded-2xl bg-white text-[#061530] font-black text-[11px] uppercase tracking-[0.2em] transition-all hover:bg-white/90 disabled:opacity-50">
+            {checkoutLoading ? 'Opening checkout...' : 'Pay Flagship Booth $500'}
+          </button>
+          <button type="button" disabled={checkoutLoading} onClick={() => handleQuickCheckout({ type: 'Attendee', tier: 'Regular' })} className="w-full px-5 py-3 rounded-2xl border border-white/15 text-white font-black text-[11px] uppercase tracking-[0.2em] transition-all hover:border-white/40 hover:bg-white/5 disabled:opacity-50">
+            {checkoutLoading ? 'Opening checkout...' : 'Pay Event Entry $5'}
+          </button>
+          {checkoutError && <p className="text-red-400 text-[11px] text-center">{checkoutError}</p>}
+        </div>
+
+        {/* Pricing bar */}
+        <div className="flex items-center gap-4 py-6 mt-4 border-t border-white/5 w-full justify-center">
+          <div className="flex flex-col items-center">
+            <span className="text-white font-black text-lg tracking-tighter italic amount">$250</span>
+            <span className="text-white/30 text-[9px] tracking-[0.2em] uppercase font-bold">Standard</span>
+          </div>
+          <div className="w-[1px] h-5 bg-white/10" />
+          <div className="flex flex-col items-center">
+            <span className="text-white font-black text-lg tracking-tighter italic amount">$500</span>
+            <span className="text-white/30 text-[9px] tracking-[0.2em] uppercase font-bold">Flagship</span>
+          </div>
+          <div className="w-[1px] h-5 bg-white/10" />
+          <div className="flex flex-col items-center">
+            <span className="text-white font-black text-lg tracking-tighter italic amount">$5</span>
+            <span className="text-white/30 text-[9px] tracking-[0.2em] uppercase font-bold">Door Entry</span>
+          </div>
         </div>
       </section>
 
@@ -386,10 +418,10 @@ function MobileHome({ cityNodes }) {
             Marketpeace is a platform that connects four pillars of the local economy into one thriving marketplace.
           </p>
           <div className="grid grid-cols-2 gap-3 text-left w-full">
-            <PillarCard title="Vendors" desc="Makers and innovators." icon={<Zap className="w-4 h-4 text-[#0077b6]" />} />
-            <PillarCard title="Venues" desc="Unique local spaces." icon={<MapPin className="w-4 h-4 text-[#0077b6]" />} />
-            <PillarCard title="Attendees" desc="Curated experiences." icon={<Users className="w-4 h-4 text-[#0077b6]" />} />
-            <PillarCard title="Partners" desc="Grow the network." icon={<Ticket className="w-4 h-4 text-[#0077b6]" />} />
+            <PillarCard title="Vendors" desc="Sell your products to a hungry local crowd." icon={<Zap className="w-4 h-4 text-[#0077b6]" />} />
+            <PillarCard title="Venues" desc="Turn your space into a destination." icon={<MapPin className="w-4 h-4 text-[#0077b6]" />} />
+            <PillarCard title="Attendees" desc="Discover brands and experiences near you." icon={<Users className="w-4 h-4 text-[#0077b6]" />} />
+            <PillarCard title="Partners" desc="Grow with the marketplace ecosystem." icon={<Ticket className="w-4 h-4 text-[#0077b6]" />} />
           </div>
         </div>
       </section>
@@ -417,8 +449,8 @@ function MobileHome({ cityNodes }) {
               <span className="text-[#0077b6] bg-[#0077b6]/10 px-3 py-1 rounded-full tracking-[0.2em] text-[10px] font-black uppercase border border-[#0077b6]/20 animate-pulse">Limited Slots</span>
             </div>
             <h3 className="text-2xl font-black text-white mb-4 tracking-tighter uppercase italic leading-[0.95]">Your booth. Your crowd. <span className="not-italic text-[#0090e0]">Your commission.</span></h3>
-            <p className="text-white/60 text-[10px] leading-relaxed font-medium mb-6 max-w-2xl">
-              Choose the tier that fits your growth strategy. Every vendor gets access to our premium infrastructure.
+            <p className="text-white/60 text-[11px] leading-relaxed font-medium mb-6 max-w-2xl">
+              Choose the tier that fits your growth strategy. Every vendor gets access to our premium infrastructure. <span className="text-white">Secure your position today.</span>
             </p>
             <div className="grid grid-cols-1 gap-4 mb-8">
               <Link to="/vendors" className="block group">
@@ -450,6 +482,23 @@ function MobileHome({ cityNodes }) {
                   </ul>
                 </div>
               </Link>
+            </div>
+          </div>
+          {/* Benefits row - was missing on mobile */}
+          <div className="w-full pt-4 border-t border-white/10">
+            <div className="flex items-center justify-around gap-4">
+              <div className="flex items-center gap-2">
+                <Zap className="w-3 h-3 text-[#0077b6]" />
+                <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">Marketing Support</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-3 h-3 text-[#0077b6]" />
+                <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">Data Ownership</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Camera className="w-3 h-3 text-[#0077b6]" />
+                <span className="text-white/50 text-[10px] uppercase font-black tracking-widest">Pro Photography</span>
+              </div>
             </div>
           </div>
           <div className="w-full liquid-glass p-6 shadow-2xl relative overflow-hidden border-[#0077b6]/20">
