@@ -298,11 +298,18 @@
   }
 
   .text-stroke-blue {
-    -webkit-text-stroke: 1.5px var(--accent-blue);
-    color: transparent;
-    filter: drop-shadow(0 0 8px rgba(0, 119, 182, 0.3));
+    color: #ffffff;
+    -webkit-text-stroke: 1.5px #0090e0;
+    filter: drop-shadow(0 0 12px rgba(0, 119, 182, 0.5));
     display: inline-block;
     vertical-align: middle;
+  }
+
+  @media (max-width: 768px) {
+    .text-stroke-blue {
+      -webkit-text-stroke: 1px #0090e0;
+      filter: drop-shadow(0 0 8px rgba(0, 119, 182, 0.4));
+    }
   }
 
   .text-glow-blue {

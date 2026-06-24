@@ -64,11 +64,18 @@ function ScrollSetup() {
       };
     }
 
-    // Reset scroll on path change
-    window.scrollTo(0, 0);
+    // Reset scroll on path change — immediate + delayed to catch lazy content
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     if (lenisInstance) {
       lenisInstance.scrollTo(0, { immediate: true });
     }
+    const t = setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (lenisInstance) lenisInstance.scrollTo(0, { immediate: true });
+    }, 50);
+    return () => clearTimeout(t);
   }, [pathname]);
 
   return null;

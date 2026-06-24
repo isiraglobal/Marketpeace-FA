@@ -378,11 +378,11 @@ function MobileHome({ cityNodes }) {
       </section>
 
       {/* About */}
-      <section className="flex flex-col items-center px-4 py-16">
+      <section className="flex flex-col items-center px-4 py-10">
         <div className="max-w-6xl w-full flex flex-col items-center text-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[8px] font-black uppercase mb-6 shadow-lg">About Marketpeace</span>
-          <h2 className="text-2xl font-black tracking-tighter mb-6 italic uppercase leading-[0.95]">Who can be a vendor? <span className="not-italic text-stroke-blue">Anyone</span> can be a vendor.</h2>
-          <p className="text-white/60 text-[11px] font-medium mb-8 max-w-3xl leading-relaxed">
+          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[8px] font-black uppercase mb-4 shadow-lg">About Marketpeace</span>
+          <h2 className="text-2xl font-black tracking-tighter mb-4 italic uppercase leading-[0.95]">Who can be a vendor? <span className="not-italic text-stroke-blue">Anyone</span> can be a vendor.</h2>
+          <p className="text-white/60 text-[11px] font-medium mb-6 max-w-3xl leading-relaxed">
             Marketpeace is a platform that connects four pillars of the local economy into one thriving marketplace.
           </p>
           <div className="grid grid-cols-2 gap-3 text-left w-full">
@@ -395,10 +395,10 @@ function MobileHome({ cityNodes }) {
       </section>
 
       {/* How it Works */}
-      <section className="flex flex-col items-center px-4 py-16">
+      <section className="flex flex-col items-center px-4 py-10">
         <div className="max-w-6xl w-full flex flex-col items-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[8px] font-black uppercase mb-6 shadow-lg">How it Works</span>
-          <h3 className="text-2xl font-black text-white mb-8 tracking-tighter text-center italic uppercase leading-[0.95]">From application to <span className="not-italic text-stroke-blue">profit</span> in 3 steps</h3>
+          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[8px] font-black uppercase mb-4 shadow-lg">How it Works</span>
+          <h3 className="text-2xl font-black text-white mb-6 tracking-tighter text-center italic uppercase leading-[0.95]">From application to <span className="not-italic text-stroke-blue">profit</span> in 3 steps</h3>
           <div className="grid grid-cols-1 gap-4 w-full">
             <JourneyStep number="01" title="Apply" desc="Tell us about your brand or venue." />
             <JourneyStep number="02" title="Selected" desc="Get picked for a matching vibe." />
@@ -409,8 +409,8 @@ function MobileHome({ cityNodes }) {
       </section>
 
       {/* Application */}
-      <section className="flex flex-col items-center px-4 py-16">
-        <div className="max-w-7xl w-full flex flex-col gap-8 items-center">
+      <section className="flex flex-col items-center px-4 py-10">
+        <div className="max-w-7xl w-full flex flex-col gap-6 items-center">
           <div className="w-full">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.3em] text-[8px] font-black uppercase shadow-lg">Vendor Application</span>
@@ -472,10 +472,10 @@ function MobileHome({ cityNodes }) {
 function HomeSections({ cityNodes }) {
   return (
     <>
-      <section id="referral" className="max-w-4xl w-full mx-auto flex flex-col items-center py-16 px-6 scroll-mt-24">
-        <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.4em] text-[8px] font-black uppercase mb-6">The Referral Network</span>
-        <h3 className="text-3xl font-black text-white mb-8 tracking-tighter uppercase italic leading-[0.9] text-center">Get paid for being <span className="not-italic text-stroke-blue whitespace-nowrap">part of the market.</span></h3>
-        <p className="text-white/60 text-base leading-relaxed font-medium mb-12 text-center max-w-2xl">Our referral program is simple: everyone wins. Vendors, venues, and enthusiasts can participate.</p>
+      <section id="referral" className="max-w-4xl w-full mx-auto flex flex-col items-center py-10 md:py-16 px-4 md:px-6 scroll-mt-24">
+        <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.4em] text-[8px] font-black uppercase mb-4 md:mb-6">The Referral Network</span>
+        <h3 className="text-2xl md:text-3xl font-black text-white mb-4 md:mb-8 tracking-tighter uppercase italic leading-[0.9] text-center">Get paid for being <span className="not-italic text-stroke-blue whitespace-nowrap">part of the market.</span></h3>
+        <p className="text-white/60 text-sm md:text-base leading-relaxed font-medium mb-8 md:mb-12 text-center max-w-2xl">Our referral program is simple: everyone wins. Vendors, venues, and enthusiasts can participate.</p>
         <div className="w-full space-y-3">
           <RewardTier tier="Tier 1" action="Refer 1 Approved Vendor" reward="$50 Cash/Credit" />
           <RewardTier tier="Tier 2" action="Refer 1 Approved Venue" reward="$75 Cash/Credit" />
@@ -483,15 +483,15 @@ function HomeSections({ cityNodes }) {
           <RewardTier tier="Tier 4" action="Refer 3 Approved Venues" reward="$300 Cash/Credit" />
           <RewardTier tier="Tier 5" action="Ticket Cluster (10+ Buyers)" reward="$25 per Cluster" />
         </div>
-        <Link to="/contact" className="mt-12 w-full md:w-auto">
-          <button className="px-10 py-5 bg-transparent border border-white/20 text-white rounded-xl text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/5 transition-all w-full">Join the Network</button>
+        <Link to="/contact" className="mt-8 md:mt-12 w-full md:w-auto">
+          <button className="px-8 py-4 bg-transparent border border-white/20 text-white rounded-xl text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/5 transition-all w-full">Join the Network</button>
         </Link>
       </section>
 
-      <section className="w-full py-16 px-6 relative overflow-hidden bg-white/[0.01]">
+      <section className="w-full py-10 md:py-16 px-4 md:px-6 relative overflow-hidden bg-white/[0.01]">
         <div className="max-w-7xl w-full mx-auto">
-          <h3 className="text-xl font-black text-white mb-12 tracking-[0.3em] uppercase italic text-center opacity-80">The Scene</h3>
-          <div className="grid grid-cols-1 gap-6">
+          <h3 className="text-lg md:text-xl font-black text-white mb-6 md:mb-12 tracking-[0.3em] uppercase italic text-center opacity-80">The Scene</h3>
+          <div className="grid grid-cols-1 gap-4 md:gap-6">
             <GalleryItem image="/assets/AI Images/249AFEB9-A174-40FA-9898-3266EAA2A6F2.png" caption="High-fidelity creator deployment in progress." />
             <GalleryItem image="/assets/AI Images/39ACA358-0EAF-4903-A46D-B7326B9B4B87.png" caption="Strategic node activation at rooftop venue." />
             <GalleryItem image="/assets/AI Images/F26D62C4-2E3A-42EA-9398-9255E9B7BDE6.png" caption="Community sync during sunset rollout." />
@@ -499,10 +499,10 @@ function HomeSections({ cityNodes }) {
         </div>
       </section>
 
-      <section className="w-full py-16 px-6 bg-white/[0.02] relative overflow-hidden">
+      <section className="w-full py-10 md:py-16 px-4 md:px-6 bg-white/[0.02] relative overflow-hidden">
         <div className="max-w-7xl w-full mx-auto flex flex-col items-center">
-          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.4em] text-[8px] font-black uppercase mb-6 shadow-lg">Event Visualizer</span>
-          <h3 className="text-3xl font-black text-white mb-12 tracking-tighter text-center italic uppercase leading-[0.9]">Experience the <span className="not-italic text-stroke-blue">Atmosphere.</span></h3>
+          <span className="text-white bg-[#0077b6] px-3 py-1 rounded-full tracking-[0.4em] text-[8px] font-black uppercase mb-4 md:mb-6 shadow-lg">Event Visualizer</span>
+          <h3 className="text-2xl md:text-3xl font-black text-white mb-8 md:mb-12 tracking-tighter text-center italic uppercase leading-[0.9]">Experience the <span className="not-italic text-stroke-blue">Atmosphere.</span></h3>
           <div className="w-full aspect-video liquid-glass rounded-[2rem] flex items-center justify-center relative group overflow-hidden shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
             <img src="/assets/AI Images/2D60E085-B17B-4507-8464-CC6772033B2E.PNG" loading="lazy" className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 transition-all duration-1000" />
@@ -517,8 +517,8 @@ function HomeSections({ cityNodes }) {
         </div>
       </section>
 
-      <section className="w-full flex flex-col items-center py-16 border-y border-white/5 bg-white/[0.01]">
-        <h3 className="text-xl font-black text-white mb-12 tracking-[0.3em] uppercase text-center italic opacity-80">Global Rollout</h3>
+      <section className="w-full flex flex-col items-center py-10 md:py-16 border-y border-white/5 bg-white/[0.01]">
+        <h3 className="text-lg md:text-xl font-black text-white mb-6 md:mb-12 tracking-[0.3em] uppercase text-center italic opacity-80">Global Rollout</h3>
         <div className="w-full overflow-hidden border-y border-white/5 py-8 liquid-glass">
           <motion.div
             className="flex whitespace-nowrap gap-10 items-center"
@@ -545,14 +545,14 @@ function HomeSections({ cityNodes }) {
             ))}
           </motion.div>
         </div>
-        <p className="text-white/30 text-[8px] tracking-[0.3em] font-black uppercase mb-8 mt-8">Coming soon to a city near you.</p>
+        <p className="text-white/30 text-[8px] tracking-[0.3em] font-black uppercase mb-6 mt-6">Coming soon to a city near you.</p>
         <Link to="/cities">
-          <button className="px-10 py-5 liquid-glass hover:bg-white/15 text-white transition-all shadow-xl">SYSTEM SCHEDULE</button>
+          <button className="px-8 py-4 liquid-glass hover:bg-white/15 text-white rounded-xl text-[10px] font-black tracking-[0.2em] uppercase transition-all shadow-xl">VIEW ALL CITIES</button>
         </Link>
       </section>
 
-      <section className="w-full py-16 px-6 bg-[#0077b6]/5">
-        <div className="max-w-4xl w-full mx-auto liquid-glass p-10 text-center shadow-2xl relative overflow-hidden">
+      <section className="w-full py-10 md:py-16 px-4 md:px-6 bg-[#0077b6]/5">
+        <div className="max-w-4xl w-full mx-auto liquid-glass p-6 md:p-10 text-center shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#0077b6]/10 blur-[100px] -mr-24 -mt-24"></div>
           <h3 className="text-3xl font-black text-white mb-6 tracking-tighter uppercase italic leading-[0.95]">Ready for <span className="not-italic text-[#0077b6]">Rollout?</span></h3>
           <p className="text-white/50 text-base font-medium mb-8 leading-relaxed">Submit your inquiry and initiate the synchronization process.</p>
@@ -562,17 +562,17 @@ function HomeSections({ cityNodes }) {
         </div>
       </section>
 
-      <section className="w-full px-6 flex flex-col items-center pb-16 relative overflow-hidden">
-        <div className="max-w-5xl w-full flex flex-col gap-16">
+      <section className="w-full px-4 md:px-6 flex flex-col items-center pb-10 md:pb-16 relative overflow-hidden">
+        <div className="max-w-5xl w-full flex flex-col gap-10 md:gap-16">
           <div className="text-center flex flex-col items-center">
-            <span className="text-[#0077b6] text-[10px] font-black tracking-[0.4em] uppercase mb-6">Our Purpose</span>
-            <h2 className="text-4xl font-black tracking-tighter mb-8 text-white italic uppercase leading-[0.9]">The MARKETPEACE <span className="not-italic text-stroke-blue">Ethos</span></h2>
-            <p className="text-white/60 font-medium text-base leading-relaxed max-w-3xl">
+            <span className="text-[#0077b6] text-[10px] font-black tracking-[0.4em] uppercase mb-4 md:mb-6">Our Purpose</span>
+            <h2 className="text-3xl md:text-4xl font-black tracking-tighter mb-4 md:mb-8 text-white italic uppercase leading-[0.9]">The MARKETPEACE <span className="not-italic text-stroke-blue">Ethos</span></h2>
+            <p className="text-white/60 font-medium text-sm md:text-base leading-relaxed max-w-3xl">
               We observed a fundamental flaw in the creator economy: maximum output, minimum ownership. MARKETPEACE was built to provide the strategic infrastructure for independence.
             </p>
           </div>
-          <div className="liquid-glass p-8 shadow-2xl w-full relative overflow-hidden">
-            <h3 className="text-2xl font-black mb-12 text-center uppercase tracking-[0.3em] text-white opacity-80 italic">System FAQ</h3>
+          <div className="liquid-glass p-6 md:p-8 shadow-2xl w-full relative overflow-hidden">
+            <h3 className="text-xl md:text-2xl font-black mb-6 md:mb-12 text-center uppercase tracking-[0.3em] text-white opacity-80 italic">FAQ</h3>
             <div className="grid grid-cols-1 gap-8 text-left">
               <FAQItem q="Strategic Position?" a="Your dedicated environment within the node rollout." />
               <FAQItem q="Early Bird?" a="Secure activation with a $100 deposit." />
@@ -672,10 +672,10 @@ function JourneyStep({ number, title, desc }) {
 
 function GalleryItem({ image, caption }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2.5rem] border border-white/10 aspect-square">
+    <div className="group relative overflow-hidden rounded-2xl md:rounded-[2rem] border border-white/10 aspect-video md:aspect-[4/3]">
       <img src={image} alt={caption} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-100" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-8">
-        <p className="text-white/80 text-[10px] md:text-xs font-black tracking-widest uppercase italic">{caption}</p>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4 md:p-8">
+        <p className="text-white/80 text-[9px] md:text-xs font-black tracking-widest uppercase italic">{caption}</p>
       </div>
     </div>
   );
