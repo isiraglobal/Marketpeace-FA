@@ -57,14 +57,11 @@ export default async function handler(req, res) {
     // Forward to Apps Script with auth token
     const response = await fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // SECURITY: Authenticate all requests to Apps Script
-        'Authorization': `Bearer ${process.env.INTERNAL_WEBHOOK_SECRET}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...sanitized.payload,
         action: 'submit',
+        _secret: process.env.INTERNAL_WEBHOOK_SECRET,
         timestamp: new Date().toISOString(),
       }),
     });

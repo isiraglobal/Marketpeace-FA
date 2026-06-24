@@ -37,12 +37,10 @@ export default async function handler(req, res) {
 
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.INTERNAL_WEBHOOK_SECRET}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'updateCities',
+          _secret: process.env.INTERNAL_WEBHOOK_SECRET,
           cities: cities.map(c => ({
             name: String(c.name || '').slice(0, 100),
             status: String(c.status || '').slice(0, 50),

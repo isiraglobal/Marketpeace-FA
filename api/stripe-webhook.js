@@ -65,17 +65,19 @@ export default async function handler(req, res) {
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // SECURITY: Shared secret for Apps Script to verify this request is legitimate
-            'Authorization': `Bearer ${process.env.INTERNAL_WEBHOOK_SECRET}`,
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'updateStatus',
+            _secret: process.env.INTERNAL_WEBHOOK_SECRET,
             type: type,
             transactionID: transactionID,
             status: 'Paid',
+            name: session.metadata.name || '',
+            email: session.metadata.email || session.customer_details?.email || '',
+            businessName: session.metadata.businessName || '',
+            ticketType: session.metadata.ticketType || '',
             receiptURL: session.receipt_url || '',
+            stripeSessionID: session.id,
           }),
         });
 

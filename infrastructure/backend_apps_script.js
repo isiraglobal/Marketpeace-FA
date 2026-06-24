@@ -1,123 +1,160 @@
 /**
- * MARKETPEACE — Google Apps Script Backend v2
+ * MARKETPEACE — Google Apps Script Backend v3
  *
- * Multi-sheet real-time sync engine.
- * Auto-creates all tabs, syncs submissions, handles webhooks,
- * sends Discord notifications + email confirmations.
+ * Multi-sheet real-time sync engine with one-click setup.
  *
- * DEPLOYMENT:
- * 1. Create Google Apps Script project
- * 2. Project Settings → Script Properties → Add:
- *    - SHEET_ID: Your Google Spreadsheet ID
- *    - DISCORD_WEBHOOK_URL: Discord webhook URL
- *    - INTERNAL_SECRET: Strong random string (same as Vercel INTERNAL_WEBHOOK_SECRET)
- * 3. Deploy → New Deployment → Web app → Execute as: Me → Anyone
- * 4. Set GOOGLE_SCRIPT_URL in Vercel env to the deployment URL
- * 5. Set a time-based trigger for autoSync (every 5 min)
+ * ─── ONE-TIME SETUP ───
+ * 1. Open this sheet: https://docs.google.com/spreadsheets/d/1U4OAHwkntuIlcgWUbtAFJ2R0hBkyTqSJHtmmzsjEa1g
+ * 2. Extensions → Apps Script, paste this file, save
+ * 3. In the editor, run the `setupSheets()` function once (grants permissions)
+ * 4. Project Settings → Script Properties → Add:
+ *    - DISCORD_WEBHOOK_URL: Your Discord webhook URL
+ *    - INTERNAL_SECRET: Strong random string (same as Vercel's INTERNAL_WEBHOOK_SECRET)
+ * 5. Deploy → New Deployment → Web app → Execute as: Me → Anyone
+ * 6. Copy the deployment URL → set as GOOGLE_SCRIPT_URL in Vercel env
+ * 7. Triggers → Add Trigger → function: autoSync, time-driven, every 5 min
+ * 8. Triggers → Add Trigger → function: dailyReport, time-driven, every day 9-10am
  */
 
+const SHEET_ID = '1U4OAHwkntuIlcgWUbtAFJ2R0hBkyTqSJHtmmzsjEa1g';
 const PROPS = PropertiesService.getScriptProperties();
-const SHEET_ID = PROPS.getProperty('SHEET_ID');
 const DISCORD_WEBHOOK_URL = PROPS.getProperty('DISCORD_WEBHOOK_URL');
 const INTERNAL_SECRET = PROPS.getProperty('INTERNAL_SECRET');
 
-/* ─── All Sheets ─── */
-const SHEET_DEFS = {
-  Vendors: {
-    headers: [
-      'Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email',
-      'Phone', 'Instagram', 'Website', 'Tier', 'Amount', 'PaymentMethod',
-      'StripeSessionID', 'ReceiptURL', 'Notes', 'LastUpdated'
-    ],
+/* ─── Sheet Definitions ─── */
+const SHEET_DEFS = [
+  {
+    name: 'Vendors',
+    headers: ['Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email', 'Phone', 'Instagram', 'Website', 'Tier', 'Amount', 'PaymentMethod', 'StripeSessionID', 'ReceiptURL', 'Notes', 'LastUpdated'],
     statuses: ['Pending', 'Paid', 'Confirmed', 'Cancelled', 'Refunded'],
     color: '#0077b6',
+    widths: [180, 140, 100, 160, 200, 200, 140, 160, 200, 100, 80, 120, 200, 200, 300, 180],
   },
-  Attendees: {
-    headers: [
-      'Timestamp', 'TransactionID', 'Status', 'Name', 'Email', 'Phone',
-      'TicketType', 'Amount', 'Referrer', 'StripeSessionID', 'ReceiptURL',
-      'CheckedIn', 'Notes', 'LastUpdated'
-    ],
+  {
+    name: 'Attendees',
+    headers: ['Timestamp', 'TransactionID', 'Status', 'Name', 'Email', 'Phone', 'TicketType', 'Amount', 'Referrer', 'StripeSessionID', 'ReceiptURL', 'CheckedIn', 'Notes', 'LastUpdated'],
     statuses: ['Pending', 'Paid', 'Confirmed', 'Checked In', 'Cancelled', 'Refunded'],
     color: '#00a86b',
+    widths: [180, 140, 100, 160, 200, 140, 120, 80, 160, 200, 200, 80, 300, 180],
   },
-  Venues: {
-    headers: [
-      'Timestamp', 'Status', 'VenueName', 'ContactName', 'Email', 'Phone',
-      'Location', 'City', 'Capacity', 'HasParking', 'Has WiFi',
-      'IndoorOutdoor', 'Notes', 'ContractURL', 'EventDate', 'LastUpdated'
-    ],
+  {
+    name: 'Venues',
+    headers: ['Timestamp', 'Status', 'VenueName', 'ContactName', 'Email', 'Phone', 'Location', 'City', 'Capacity', 'HasParking', 'HasWiFi', 'IndoorOutdoor', 'Notes', 'ContractURL', 'EventDate', 'LastUpdated'],
     statuses: ['In Review', 'Approved', 'Active', 'Completed', 'Declined'],
     color: '#9b59b6',
+    widths: [180, 100, 200, 160, 200, 140, 200, 140, 80, 80, 80, 100, 300, 200, 120, 180],
   },
-  Contacts: {
-    headers: [
-      'Timestamp', 'Name', 'Email', 'Phone', 'Subject', 'Message',
-      'Source', 'Replied', 'Notes', 'LastUpdated'
-    ],
+  {
+    name: 'Contacts',
+    headers: ['Timestamp', 'Name', 'Email', 'Phone', 'Subject', 'Message', 'Source', 'Replied', 'Notes', 'LastUpdated'],
     statuses: ['New', 'Read', 'Replied', 'Archived'],
     color: '#e67e22',
+    widths: [180, 160, 200, 140, 200, 400, 120, 80, 300, 180],
   },
-  Cities: {
+  {
+    name: 'Cities',
     headers: ['Name', 'Status', 'Date', 'Venue', 'Attendees', 'Vendors', 'Notes', 'LastUpdated'],
     statuses: ['Planned', 'Confirmed', 'Active', 'Completed', 'Cancelled'],
     color: '#2ecc71',
+    widths: [160, 100, 120, 200, 80, 80, 300, 180],
   },
-  Transactions: {
-    headers: [
-      'Timestamp', 'TransactionID', 'Type', 'CustomerName', 'CustomerEmail',
-      'Tier', 'Amount', 'Currency', 'Status', 'StripeSessionID',
-      'PaymentIntentID', 'ReceiptURL', 'RefundedAmount', 'Notes', 'LastUpdated'
-    ],
+  {
+    name: 'Transactions',
+    headers: ['Timestamp', 'TransactionID', 'Type', 'CustomerName', 'CustomerEmail', 'Tier', 'Amount', 'Currency', 'Status', 'StripeSessionID', 'PaymentIntentID', 'ReceiptURL', 'RefundedAmount', 'Notes', 'LastUpdated'],
     statuses: ['Pending', 'Completed', 'Refunded', 'Partial Refund', 'Failed'],
     color: '#f1c40f',
+    widths: [180, 140, 100, 160, 200, 100, 80, 80, 100, 200, 200, 200, 100, 300, 180],
   },
-  Analytics: {
-    headers: [
-      'Date', 'TotalVendors', 'TotalAttendees', 'TotalVenues', 'Revenue',
-      'NewVendors', 'NewAttendees', 'PageViews', 'Notes', 'LastUpdated'
-    ],
+  {
+    name: 'Analytics',
+    headers: ['Date', 'TotalVendors', 'TotalAttendees', 'TotalVenues', 'Revenue', 'NewVendors', 'NewAttendees', 'Notes', 'LastUpdated'],
     statuses: [],
     color: '#3498db',
+    widths: [120, 100, 100, 100, 100, 100, 100, 300, 180],
   },
-};
+];
 
-/* ─── Helpers ─── */
+/* ═══════════════════════════════════════════
+   SETUP — run this once from the editor
+   ═══════════════════════════════════════════ */
+function setupSheets() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+
+  SHEET_DEFS.forEach(def => {
+    let sheet = ss.getSheetByName(def.name);
+    if (sheet) {
+      const r = confirm(`Sheet "${def.name}" already exists. Overwrite it? Click Cancel to skip.`);
+      if (!r) return;
+      ss.deleteSheet(sheet);
+    }
+    sheet = ss.insertSheet(def.name);
+    sheet.setFrozenRows(1);
+
+    const headerRange = sheet.getRange(1, 1, 1, def.headers.length);
+    headerRange.setValues([def.headers]);
+    headerRange.setBackground(def.color);
+    headerRange.setFontColor('#ffffff');
+    headerRange.setFontWeight('bold');
+    headerRange.setFontSize(10);
+
+    if (def.widths) {
+      def.widths.forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+    }
+
+    if (def.statuses && def.statuses.length > 0) {
+      const statusCol = def.headers.indexOf('Status') + 1;
+      if (statusCol > 0) {
+        const rule = SpreadsheetApp.newDataValidation()
+          .requireValueInList(def.statuses, true)
+          .setAllowInvalid(false)
+          .build();
+        const lastRow = sheet.getMaxRows();
+        if (lastRow > 1) {
+          sheet.getRange(2, statusCol, lastRow - 1).setDataValidation(rule);
+        }
+      }
+    }
+
+    Logger.log(`✅ Created sheet: ${def.name}`);
+  });
+
+  ss.setActiveSheet(ss.getSheetByName('Vendors'));
+  SpreadsheetApp.flush();
+  Logger.log('🎉 All sheets created successfully!');
+}
+
+/* ═══════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════ */
 function sanitize(val, max) {
   if (typeof val !== 'string') val = String(val || '');
   return val.trim().replace(/^[=+\-@]/, "'$&").slice(0, max || 500);
 }
 
-function now() { return new Date().toISOString(); }
+function nowISO() { return new Date().toISOString(); }
 
-function getSheet(ss, name) {
+function getDef(sheetName) {
+  return SHEET_DEFS.find(d => d.name === sheetName);
+}
+
+function ensureSheet(ss, name) {
   let sheet = ss.getSheetByName(name);
-  if (!sheet) {
-    sheet = ss.insertSheet(name);
-    const def = SHEET_DEFS[name];
-    if (def && def.headers) {
-      sheet.appendRow(def.headers);
-      if (def.color) {
-        const r = sheet.getRange('A1:' + String.fromCharCode(64 + def.headers.length) + '1');
-        r.setBackground(def.color);
-        r.setFontColor('#ffffff');
-        r.setFontWeight('bold');
-      }
-    }
-    const colCount = def ? def.headers.length : 10;
-    sheet.setFrozenRows(1);
-    sheet.setColumnWidths(1, colCount, 120);
+  if (sheet) return sheet;
+  const def = getDef(name);
+  sheet = ss.insertSheet(name);
+  sheet.setFrozenRows(1);
+  if (def) {
+    sheet.getRange(1, 1, 1, def.headers.length).setValues([def.headers])
+      .setBackground(def.color).setFontColor('#ffffff').setFontWeight('bold');
+    if (def.widths) def.widths.forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   }
   return sheet;
 }
 
-function ensureAllSheets(ss) {
-  Object.keys(SHEET_DEFS).forEach(name => getSheet(ss, name));
-}
-
 function isAuthorized(data) {
   if (!INTERNAL_SECRET) return false;
-  return data._secret === INTERNAL_SECRET;
+  if (data && data._secret === INTERNAL_SECRET) return true;
+  return false;
 }
 
 function findRowByTID(sheet, tid) {
@@ -128,111 +165,76 @@ function findRowByTID(sheet, tid) {
   return -1;
 }
 
-/* ─── Main POST ─── */
+/* ═══════════════════════════════════════════
+   WEBHOOK HANDLERS
+   ═══════════════════════════════════════════ */
+
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     if (!data.action) return respond({ error: 'Missing action' });
-
     if (!isAuthorized(data)) {
       notifyDiscord('🚨 Unauthorized Access', `Action: ${data.action}`, 15158332);
       return respond({ error: 'Unauthorized' });
     }
-
-    if (!SHEET_ID) return respond({ error: 'SHEET_ID not configured' });
-
     const ss = SpreadsheetApp.openById(SHEET_ID);
-    ensureAllSheets(ss);
 
     switch (data.action) {
-      case 'submit':
-        return handleSubmit(ss, data);
-      case 'updateStatus':
-        return handleUpdateStatus(ss, data);
-      case 'getCities':
-        return handleGetCities(ss);
-      case 'updateCities':
-        return handleUpdateCities(ss, data);
-      case 'getVenues':
-        return handleGetVenues(ss);
-      case 'getAnalytics':
-        return handleGetAnalytics(ss);
-      case 'syncData':
-        return handleSyncData(ss, data);
-      case 'health':
-        return respond({ status: 'ok', timestamp: now() });
-      default:
-        return respond({ error: 'Unknown action' });
+      case 'submit':        return handleSubmit(ss, data);
+      case 'updateStatus':  return handleUpdateStatus(ss, data);
+      case 'getCities':     return handleGetCities(ss);
+      case 'updateCities':  return handleUpdateCities(ss, data);
+      case 'getVenues':     return handleGetVenues(ss);
+      case 'getAnalytics':  return handleGetAnalytics(ss);
+      case 'syncData':      return handleSyncData(ss, data);
+      case 'health':        return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID });
+      default:              return respond({ error: 'Unknown action' });
     }
   } catch (err) {
-    notifyDiscord('⚠️ System Error', sanitize(err.toString(), 200), 15158332);
-    return respond({ error: 'Internal error', message: err.toString() });
+    notifyDiscord('⚠️ System Error', sanitize(err.toString(), 300), 15158332);
+    return respond({ error: 'Internal error' });
   }
 }
 
-/* ─── GET handler ─── */
 function doGet(e) {
   try {
-    if (!SHEET_ID) return ContentService.createTextOutput(JSON.stringify({ error: 'Not configured' })).setMimeType(ContentService.MimeType.JSON);
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const action = e.parameter.action || 'getCities';
-
     if (action === 'getCities') return handleGetCities(ss);
     if (action === 'getVenues') return handleGetVenues(ss);
-
+    if (action === 'health') return respond({ status: 'ok', timestamp: nowISO() });
     return respond({ error: 'Unknown action' });
   } catch (err) {
     return respond({ error: err.toString() });
   }
 }
 
-/* ─── Actions ─── */
-
-/* Submit form data */
+/* ─── Action: submit ─── */
 function handleSubmit(ss, data) {
-  const typeMap = {
-    VENDOR: 'Vendors',
-    VENUE: 'Venues',
-    ATTENDEE: 'Attendees',
-    CONTACT: 'Contacts',
-  };
+  const map = { VENDOR: 'Vendors', VENUE: 'Venues', ATTENDEE: 'Attendees', CONTACT: 'Contacts' };
+  const name = map[(data.type || '').toUpperCase()];
+  if (!name) return respond({ error: 'Invalid type' });
 
-  const sheetName = typeMap[(data.type || '').toUpperCase()];
-  if (!sheetName) return respond({ error: 'Invalid type' });
+  const sheet = ensureSheet(ss, name);
+  const tid = sanitize(data.transactionID || 'TXN-' + Math.random().toString(36).slice(2, 10).toUpperCase(), 50);
+  sheet.appendRow(buildRow(data.type.toUpperCase(), data, tid));
 
-  const sheet = getSheet(ss, sheetName);
-  const def = SHEET_DEFS[sheetName];
+  notifyDiscord('📝 New ' + data.type,
+    `**Name:** ${sanitize(data.name, 50)}\n**Email:** ${(data.email || 'N/A').slice(0, 3)}***\n**ID:** ${tid}`, 3447003);
 
-  const timestamp = now();
-  const tid = sanitize(data.transactionID || ('TXN-' + Math.random().toString(36).slice(2, 10).toUpperCase()), 50);
-  const row = buildRow(data.type.toUpperCase(), data, timestamp, tid);
-
-  sheet.appendRow(row);
-
-  const emailPreview = data.email ? data.email.slice(0, 3) + '***' : 'N/A';
-  notifyDiscord(
-    '📝 New ' + data.type,
-    `**Email:** ${emailPreview}\n**Name:** ${sanitize(data.name, 50)}\n**Status:** Pending\n**ID:** ${tid}`,
-    3447003
-  );
-
-  return respond({ success: true, transactionID: tid, message: 'Submitted' });
+  return respond({ success: true, transactionID: tid });
 }
 
-/* Update status (from Stripe webhook or admin) */
+/* ─── Action: updateStatus ─── */
 function handleUpdateStatus(ss, data) {
-  const typeMap = {
-    VENDOR: 'Vendors',
-    ATTENDEE: 'Attendees',
-  };
-
-  const sheetName = typeMap[(data.type || '').toUpperCase()];
-  if (!sheetName) return respond({ error: 'Invalid type' });
+  const map = { VENDOR: 'Vendors', ATTENDEE: 'Attendees' };
+  const name = map[(data.type || '').toUpperCase()];
+  if (!name) return respond({ error: 'Invalid type' });
 
   const tid = sanitize(data.transactionID, 50);
   if (!tid) return respond({ error: 'Missing transactionID' });
 
-  const sheet = ss.getSheetByName(sheetName);
+  const sheet = ss.getSheetByName(name);
   if (!sheet) return respond({ error: 'Sheet not found' });
 
   const rowIdx = findRowByTID(sheet, tid);
@@ -240,165 +242,128 @@ function handleUpdateStatus(ss, data) {
 
   const statusCol = 3;
   sheet.getRange(rowIdx, statusCol).setValue(sanitize(data.status, 50));
-  const lastCol = 16;
-  sheet.getRange(rowIdx, lastCol).setValue(now());
+  sheet.getRange(rowIdx, lastColIdx(name)).setValue(nowISO());
 
-  if (data.receiptURL) {
-    const receiptCol = sheetName === 'Vendors' ? 14 : 11;
-    sheet.getRange(rowIdx, receiptCol).setValue(sanitize(data.receiptURL, 500));
-  }
+  const receiptCol = name === 'Vendors' ? 14 : 11;
+  if (data.receiptURL) sheet.getRange(rowIdx, receiptCol).setValue(sanitize(data.receiptURL, 500));
+  const sessionCol = name === 'Vendors' ? 13 : 10;
+  if (data.stripeSessionID) sheet.getRange(rowIdx, sessionCol).setValue(sanitize(data.stripeSessionID, 100));
 
-  if (data.stripeSessionID) {
-    const sessionCol = sheetName === 'Vendors' ? 13 : 10;
-    sheet.getRange(rowIdx, sessionCol).setValue(sanitize(data.stripeSessionID, 100));
-  }
+  const paid = data.status === 'Paid' || data.status === 'Confirmed';
+  notifyDiscord(paid ? '💰 Payment Received' : '🔄 Status Update',
+    `**Type:** ${data.type}\n**ID:** ${tid.slice(0, 8)}***\n**Status:** ${data.status}`,
+    paid ? 3066993 : 15105570);
 
-  const emoji = data.status === 'Paid' || data.status === 'Confirmed' ? '💰' : '🔄';
-  const clr = data.status === 'Paid' || data.status === 'Confirmed' ? 3066993 : 15105570;
-  notifyDiscord(
-    `${emoji} ${data.type} ${data.status}`,
-    `**ID:** ${tid.slice(0, 8)}***\n**Status:** ${data.status}`,
-    clr
-  );
-
-  if ((data.status === 'Paid' || data.status === 'Confirmed') && data.email) {
-    sendConfirmationEmail(data.type.toUpperCase(), {
-      email: data.email,
-      name: data.name || 'Valued Guest',
-      tid: tid,
-      business: data.businessName || '',
-      ticketType: data.ticketType || 'General',
+  if (paid && data.email) {
+    sendEmail(data.type.toUpperCase(), {
+      email: data.email, name: data.name || 'Valued Guest',
+      tid, business: data.businessName || '', ticketType: data.ticketType || 'General',
     });
   }
 
-  return respond({ success: true, message: 'Updated' });
+  return respond({ success: true });
 }
 
-/* Get cities */
+/* ─── Action: getCities ─── */
 function handleGetCities(ss) {
   const sheet = ss.getSheetByName('Cities');
-  if (!sheet) return respond([]);
+  if (!sheet || sheet.getLastRow() < 2) return respond([]);
   const rows = sheet.getDataRange().getValues();
-  if (rows.length < 2) return respond([]);
   const cities = [];
   for (let i = 1; i < rows.length; i++) {
-    if (rows[i][0]) {
-      cities.push({
-        name: String(rows[i][0] || ''),
-        status: String(rows[i][1] || 'Planned'),
-        date: String(rows[i][2] || ''),
-        venue: String(rows[i][3] || ''),
-      });
-    }
+    if (rows[i][0]) cities.push({ name: String(rows[i][0]), status: String(rows[i][1] || 'Planned'), date: String(rows[i][2] || ''), venue: String(rows[i][3] || '') });
   }
   return respond(cities);
 }
 
-/* Update cities */
+/* ─── Action: updateCities ─── */
 function handleUpdateCities(ss, data) {
   if (!Array.isArray(data.cities)) return respond({ error: 'Invalid format' });
-  const sheet = getSheet(ss, 'Cities');
+  const sheet = ensureSheet(ss, 'Cities');
   sheet.clearContents();
-  sheet.appendRow(SHEET_DEFS.Cities.headers);
-  data.cities.forEach(c => {
-    sheet.appendRow([
-      sanitize(c.name || '', 100),
-      sanitize(c.status || 'Planned', 50),
-      sanitize(c.date || '', 50),
-      sanitize(c.venue || '', 150),
-      '', '', '', now(),
-    ]);
-  });
+  const def = getDef('Cities');
+  sheet.getRange(1, 1, 1, def.headers.length).setValues([def.headers]);
+  data.cities.forEach(c => sheet.appendRow([
+    sanitize(c.name, 100), sanitize(c.status || 'Planned', 50), sanitize(c.date, 50),
+    sanitize(c.venue, 150), '', '', '', nowISO(),
+  ]));
   notifyDiscord('🌍 Cities Synced', `${data.cities.length} cities updated`, 3447003);
   return respond({ success: true, count: data.cities.length });
 }
 
-/* Get venues for public view */
+/* ─── Action: getVenues ─── */
 function handleGetVenues(ss) {
   const sheet = ss.getSheetByName('Venues');
-  if (!sheet) return respond([]);
+  if (!sheet || sheet.getLastRow() < 2) return respond([]);
   const rows = sheet.getDataRange().getValues();
-  if (rows.length < 2) return respond([]);
   const venues = [];
   for (let i = 1; i < rows.length; i++) {
     if (rows[i][0] && String(rows[i][1]) === 'Approved') {
-      venues.push({
-        name: String(rows[i][2] || ''),
-        location: String(rows[i][6] || ''),
-        city: String(rows[i][7] || ''),
-        capacity: String(rows[i][8] || ''),
-      });
+      venues.push({ name: String(rows[i][2] || ''), location: String(rows[i][6] || ''), city: String(rows[i][7] || ''), capacity: String(rows[i][8] || '') });
     }
   }
   return respond(venues);
 }
 
-/* Get analytics dashboard data */
+/* ─── Action: getAnalytics ─── */
 function handleGetAnalytics(ss) {
   const stats = {};
-  Object.keys(SHEET_DEFS).forEach(name => {
-    const s = ss.getSheetByName(name);
-    if (s) stats[name] = Math.max(0, s.getLastRow() - 1);
+  SHEET_DEFS.forEach(def => {
+    const s = ss.getSheetByName(def.name);
+    stats[def.name] = s ? Math.max(0, s.getLastRow() - 1) : 0;
   });
-
   let revenue = 0;
   const tSheet = ss.getSheetByName('Transactions');
-  if (tSheet) {
-    const tRows = tSheet.getDataRange().getValues();
-    for (let i = 1; i < tRows.length; i++) {
-      const amt = parseFloat(tRows[i][6]) || 0;
-      const st = String(tRows[i][8] || '');
-      if (st === 'Completed' || st === 'Paid') revenue += amt;
+  if (tSheet && tSheet.getLastRow() > 1) {
+    const rows = tSheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][8] || '') === 'Completed') revenue += parseFloat(rows[i][6]) || 0;
     }
   }
-
   stats.Revenue = revenue;
   return respond(stats);
 }
 
-/* Full data sync (for admin panel) */
+/* ─── Action: syncData (admin panel) ─── */
 function handleSyncData(ss, data) {
   if (!data.sheet || !Array.isArray(data.rows)) return respond({ error: 'Invalid format' });
-  const sheet = getSheet(ss, data.sheet);
-  if (!data.headers) return respond({ error: 'Missing headers' });
-
+  const sheet = ensureSheet(ss, data.sheet);
   sheet.clearContents();
-  sheet.appendRow(data.headers);
+  const def = getDef(data.sheet);
+  if (def) sheet.getRange(1, 1, 1, def.headers.length).setValues([def.headers]);
   data.rows.forEach(r => sheet.appendRow(r.map(v => sanitize(v, 500))));
-
   return respond({ success: true, count: data.rows.length });
 }
 
-/* ─── Row Builder ─── */
-function buildRow(type, data, timestamp, tid) {
-  const s = (v, max) => sanitize(v, max);
+/* ═══════════════════════════════════════════
+   ROW BUILDER
+   ═══════════════════════════════════════════ */
+function buildRow(type, data, tid) {
+  const s = (v, m) => sanitize(v, m);
+  const ts = nowISO();
   switch (type) {
     case 'VENDOR':
-      return [timestamp, tid, 'Pending', s(data.name, 100), s(data.businessName, 150),
-              s(data.email, 254), s(data.phone, 20), s(data.instagram, 100),
-              s(data.website, 200), s(data.tier, 20), s(data.amount, 20),
-              s(data.paymentMethod, 20), '', '', '', now()];
+      return [ts, tid, 'Pending', s(data.name, 100), s(data.businessName, 150), s(data.email, 254), s(data.phone, 20), s(data.instagram, 100), s(data.website, 200), s(data.tier, 20), s(data.amount, 20), s(data.paymentMethod, 20), '', '', '', ts];
     case 'ATTENDEE':
-      return [timestamp, tid, 'Pending', s(data.name, 100), s(data.email, 254),
-              s(data.phone, 20), s(data.ticketType, 30), s(data.amount, 20),
-              s(data.referrer, 100), '', '', 'No', '', now()];
+      return [ts, tid, 'Pending', s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.ticketType, 30), s(data.amount, 20), s(data.referrer, 100), '', '', 'No', '', ts];
     case 'VENUE':
-      return [timestamp, 'In Review', s(data.venueName, 150), s(data.name, 100),
-              s(data.email, 254), s(data.phone, 20), s(data.location, 200),
-              s(data.city, 100), s(data.capacity, 20), s(data.hasParking, 10),
-              s(data.hasWifi, 10), s(data.indoorOutdoor, 20), s(data.notes, 1000),
-              '', s(data.eventDate, 50), now()];
+      return [ts, 'In Review', s(data.venueName, 150), s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.location, 200), s(data.city, 100), s(data.capacity, 20), s(data.hasParking, 10), s(data.hasWiFi, 10), s(data.indoorOutdoor, 20), s(data.notes, 1000), '', s(data.eventDate, 50), ts];
     case 'CONTACT':
-      return [timestamp, s(data.name, 100), s(data.email, 254), s(data.phone, 20),
-              s(data.subject, 200), s(data.message, 2000), s(data.source, 50),
-              'No', '', now()];
+      return [ts, s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.subject, 200), s(data.message, 2000), s(data.source, 50), 'No', '', ts];
     default:
-      return [timestamp, tid, 'Unknown'];
+      return [ts, tid, 'Unknown'];
   }
 }
 
-/* ─── Email ─── */
-function sendConfirmationEmail(type, d) {
+function lastColIdx(name) {
+  const def = getDef(name);
+  return def ? def.headers.length : 16;
+}
+
+/* ═══════════════════════════════════════════
+   EMAIL
+   ═══════════════════════════════════════════ */
+function sendEmail(type, d) {
   if (!d.email) return;
   const templates = {
     VENDOR: {
@@ -413,12 +378,12 @@ function sendConfirmationEmail(type, d) {
         'Transaction: {TID}',
         '',
         '── What Happens Next ──',
-        'In 3-5 days you\'ll receive:',
-        '• Event timeline & load-in instructions',
-        '• Promotional materials featuring your brand',
-        '• Social media schedule & vendor spotlight details',
+        "In 3-5 days you'll receive:",
+        "• Event timeline & load-in instructions",
+        "• Promotional materials featuring your brand",
+        "• Social media schedule & vendor spotlight details",
         '',
-        'Questions? Reply to this email or contact us at contact@foreignaffairsmarket.com',
+        'Questions? contact@foreignaffairsmarket.com',
         '',
         '— The MARKETPEACE Team',
       ].join('\n'),
@@ -428,7 +393,7 @@ function sendConfirmationEmail(type, d) {
       body: [
         'Hey {NAME}!',
         '',
-        'You\'re all set — your ticket to MARKETPEACE is confirmed.',
+        "You're all set — your ticket to MARKETPEACE is confirmed.",
         '',
         '── Ticket Info ──',
         'Type: {TICKET_TYPE}',
@@ -444,27 +409,21 @@ function sendConfirmationEmail(type, d) {
       ].join('\n'),
     },
   };
-
   const tpl = templates[type];
   if (!tpl) return;
-
   try {
     MailApp.sendEmail({
       to: d.email,
       subject: tpl.subject,
-      body: tpl.body
-        .replace(/{NAME}/g, sanitize(d.name, 100))
-        .replace(/{TID}/g, sanitize(d.tid, 50))
-        .replace(/{BUSINESS}/g, sanitize(d.business, 150))
-        .replace(/{TICKET_TYPE}/g, sanitize(d.ticketType, 30)),
+      body: tpl.body.replace(/{NAME}/g, sanitize(d.name, 100)).replace(/{TID}/g, sanitize(d.tid, 50)).replace(/{BUSINESS}/g, sanitize(d.business, 150)).replace(/{TICKET_TYPE}/g, sanitize(d.ticketType, 30)),
       name: 'MARKETPEACE',
     });
-  } catch (e) {
-    console.error('Email failed: ' + e.toString());
-  }
+  } catch (e) { console.error('Email failed:', e.toString()); }
 }
 
-/* ─── Discord ─── */
+/* ═══════════════════════════════════════════
+   DISCORD
+   ═══════════════════════════════════════════ */
 function notifyDiscord(title, desc, color) {
   if (!DISCORD_WEBHOOK_URL) return;
   try {
@@ -482,37 +441,48 @@ function notifyDiscord(title, desc, color) {
       }),
       muteHttpExceptions: true,
     });
-  } catch (e) {
-    console.error('Discord error: ' + e.toString());
-  }
+  } catch (e) { console.error('Discord error:', e.toString()); }
 }
 
-/* ─── Auto Sync (every 5 min) ─── */
+/* ═══════════════════════════════════════════
+   AUTO SYNC & REPORTING
+   ═══════════════════════════════════════════ */
 function autoSync() {
-  if (!SHEET_ID) return;
   const ss = SpreadsheetApp.openById(SHEET_ID);
-  ensureAllSheets(ss);
-
-  const nowDate = new Date();
-  const isTopOfHour = nowDate.getMinutes() < 5;
-
   let stats = '';
-  Object.keys(SHEET_DEFS).forEach(name => {
-    const s = ss.getSheetByName(name);
-    if (s) {
-      const count = Math.max(0, s.getLastRow() - 1);
-      stats += `**${name}:** ${count}\n`;
-    }
+  SHEET_DEFS.forEach(def => {
+    const s = ss.getSheetByName(def.name);
+    stats += `**${def.name}:** ${s ? Math.max(0, s.getLastRow() - 1) : 0}\n`;
   });
-
-  if (isTopOfHour) {
+  const min = new Date().getMinutes();
+  if (min < 5) {
     notifyDiscord('📡 System Health Pulse', `All systems operational.\n\n${stats}`, 3447003);
   }
 }
 
-/* ─── Response Builder ─── */
+function dailyReport() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let body = '📊 **MARKETPEACE Daily Report**\n\n';
+  SHEET_DEFS.forEach(def => {
+    const s = ss.getSheetByName(def.name);
+    const count = s ? Math.max(0, s.getLastRow() - 1) : 0;
+    body += `**${def.name}:** ${count}\n`;
+  });
+  let revenue = 0;
+  const tSheet = ss.getSheetByName('Transactions');
+  if (tSheet && tSheet.getLastRow() > 1) {
+    const rows = tSheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][8] || '') === 'Completed') revenue += parseFloat(rows[i][6]) || 0;
+    }
+  }
+  body += `\n**Total Revenue:** $${revenue.toFixed(2)}`;
+  notifyDiscord('📊 Daily Report', body, 3447003);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSE
+   ═══════════════════════════════════════════ */
 function respond(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }

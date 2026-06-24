@@ -69,3 +69,4 @@ generate_index.py
 replace_colors.py
 update_glass.py
 scripts/
+.vercel
