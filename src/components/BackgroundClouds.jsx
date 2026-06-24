@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Component } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Cloud } from '@react-three/drei';
 import * as THREE from 'three';
@@ -136,6 +136,25 @@ function CloudScene() {
   );
 }
 
+class CloudErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error) {
+    console.warn('Cloud rendering failed, falling back to gradient:', error.message);
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
+const SKY_GRADIENT = 'linear-gradient(180deg, #4A90D9 0%, #87CEEB 40%, #B0D4F1 70%, #D4E6F1 100%)';
+
 export default function BackgroundClouds() {
   const [showClouds, setShowClouds] = useState(false);
 
@@ -153,22 +172,24 @@ export default function BackgroundClouds() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0" style={{ ...noiseOverlayStyle }}>
+      <div className="absolute inset-0" style={{ background: SKY_GRADIENT }} />
       {showClouds && (
-        <Canvas
-          shadows={false}
-          dpr={[1, 1.25]}
-          camera={{ position: [0, 0, 5], fov: 70 }}
-          gl={{ antialias: false, powerPreference: 'high-performance' }}
-          style={{ background: 'linear-gradient(180deg, #4A90D9 0%, #87CEEB 40%, #B0D4F1 70%, #D4E6F1 100%)' }}
-        >
-          <CloudScene />
-        </Canvas>
-      )}
-      {!showClouds && (
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(180deg, #4A90D9 0%, #87CEEB 40%, #B0D4F1 70%, #D4E6F1 100%)' }}
-        />
+        <CloudErrorBoundary>
+          <Canvas
+            shadows={false}
+            dpr={[1, 1.25]}
+            camera={{ position: [0, 0, 5], fov: 70 }}
+            gl={{ antialias: false, powerPreference: 'high-performance' }}
+            onCreated={({ gl }) => {
+              gl.domElement.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                setShowClouds(false);
+              });
+            }}
+          >
+            <CloudScene />
+          </Canvas>
+        </CloudErrorBoundary>
       )}
     </div>
   );
