@@ -76,19 +76,19 @@ export default function Vendors() {
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
         <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[10px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
-          System Inquiry
+          Vendor Applications
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-tight md:leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Initiate <span className="not-italic text-stroke-blue">Protocol Entry</span>
+          Grow Your <span className="not-italic text-stroke-blue">Business Here</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10">
-          Direct line to the MARKETPEACE core. Our coordination team is on standby for high-value strategic inquiries.
+          Join MARKETPEACE and get your brand in front of thousands of local shoppers. Our team handles the setup, marketing, and crowd — you just bring your product and passion.
         </p>
       </motion.div>
 
-      {/* Tiered System Section */}
+      {/* Booth Options */}
       <div className="max-w-6xl w-full flex flex-col items-center mb-12 md:mb-20">
-        <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white mb-8 md:mb-12 text-center uppercase italic">System Leverage</h2>
+        <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white mb-8 md:mb-12 text-center uppercase italic">Choose Your Booth</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
           <TierCard 
             title="Standard Node" 
@@ -107,7 +107,7 @@ export default function Vendors() {
       </div>
 
       <div className="max-w-6xl w-full flex flex-col items-center mb-12 md:mb-20 liquid-glass p-8 md:p-16">
-        <h3 className="text-xl md:text-3xl font-black text-white mb-8 uppercase italic text-center">Core Benefits</h3>
+        <h3 className="text-xl md:text-3xl font-black text-white mb-8 uppercase italic text-center">Everything You Get</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
             {[
               "Premium foot traffic at curated events",
@@ -135,27 +135,27 @@ export default function Vendors() {
         <div className="lg:col-span-7 flex flex-col gap-8 md:gap-10">
           <div className="flex flex-col gap-4 text-center lg:text-left">
             <h2 className="text-2xl md:text-5xl font-black tracking-tight text-white leading-tight italic uppercase">
-              Secure Your Node: <span className="not-italic text-[#0077b6]">{selectedAmount} Deposit</span>
+              Secure Your Spot: <span className="not-italic text-[#0077b6]">{selectedAmount} Deposit</span>
             </h2>
             <div className="h-1 w-20 bg-[#0077b6] rounded-full mx-auto lg:mx-0"></div>
-            <p className="text-white/50 text-base md:text-lg font-medium mt-2">Lock in your position within the MARKETPEACE rollout. Balance due prior to system activation.</p>
+            <p className="text-white/50 text-base md:text-lg font-medium mt-2">Lock in your place at our next event. Balance is due before the event date.</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mt-4">
-            <VendorFeature title="Market Leverage" desc="Direct access to curated, high-intent audience." />
-            <VendorFeature title="System Synergy" desc="Join a network of high-value creators." />
-            <VendorFeature title="High-Fidelity Media" desc="Professional assets to amplify authority." />
-            <VendorFeature title="Strategic Access" desc="Guest tickets and promotional resources." />
+            <VendorFeature title="Foot Traffic" desc="Direct access to a curated, high-intent local audience." />
+            <VendorFeature title="Network Effects" desc="Join a growing community of top-tier creators and brands." />
+            <VendorFeature title="Professional Media" desc="High-quality photos and video content for your brand." />
+            <VendorFeature title="VIP Access" desc="Guest tickets and cross-promotional opportunities." />
           </div>
         </div>
 
         <div className="lg:col-span-5 liquid-glass p-8 md:p-12 relative overflow-hidden group">
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0077b6]/20 rounded-full blur-[80px] pointer-events-none"></div>
           <h3 className="text-2xl md:text-3xl text-white font-black mb-4 italic uppercase title">
-            STRATEGIC ASSET CURATION
+            Apply to Sell
           </h3>
           <p className="text-white/70 text-lg font-medium leading-relaxed mb-6 description">
-            Seeking to integrate your brand into the rollout? Use the protocol form or send a direct portfolio to our lead curators.
+            Ready to grow your business? Fill out the form below and our team will review your application within 48 hours.
           </p>
           
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5">
@@ -196,7 +196,7 @@ export default function Vendors() {
             <div className="flex items-start gap-4 mt-2">
               <input type="checkbox" required id="terms" className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5" />
               <label htmlFor="terms" className="text-[10px] md:text-[11px] text-white/40 leading-relaxed font-light">
-                I agree to the System Protocol and understand the position deposit is non-refundable.
+                I agree to the terms and conditions and understand the deposit is non-refundable.
               </label>
             </div>
             

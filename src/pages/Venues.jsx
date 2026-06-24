@@ -32,10 +32,10 @@ export default function Venues() {
           Venue Partnerships
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Host a Market,<br/><span className="not-italic text-stroke-blue">Get Noticed</span>
+          Host an Event,<br/><span className="not-italic text-stroke-blue">Get Filled</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10">
-          Host a Foreign Affairs Market Pop-Up. We fill it with 150+ eager shoppers and provide professional content.
+          Partner with MARKETPEACE and we'll fill your space with 150+ engaged shoppers. You get the foot traffic, we handle the rest.
         </p>
       </motion.div>
 

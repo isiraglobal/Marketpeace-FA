@@ -33,10 +33,10 @@ export default function Contact() {
           Get In Touch
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Connect <span className="not-italic text-stroke-blue">With Us</span>
+          Let's <span className="not-italic text-stroke-blue">Talk</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10 description">
-          Have questions about the market? Whether you're a creator, an attendee, or just curious, we're here to help.
+          Have a question about vending, attending, or partnering? We're here to help — drop us a line.
         </p>
       </motion.div>
 

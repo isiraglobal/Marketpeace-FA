@@ -224,10 +224,10 @@ export default function Home() {
                 Marketpeace is a platform that connects four pillars of the local economy into one thriving marketplace.
               </p>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 text-left w-full">
-                <PillarCard title="Vendors" desc="Makers and innovators." icon={<Zap className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
-                <PillarCard title="Venues" desc="Unique local spaces." icon={<MapPin className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
-                <PillarCard title="Attendees" desc="Curated experiences." icon={<Users className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
-                <PillarCard title="Partners" desc="Grow the network." icon={<Ticket className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
+                <PillarCard title="Vendors" desc="Sell your products to a hungry local crowd." icon={<Zap className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
+                <PillarCard title="Venues" desc="Turn your space into a destination." icon={<MapPin className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
+                <PillarCard title="Attendees" desc="Discover brands and experiences near you." icon={<Users className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
+                <PillarCard title="Partners" desc="Grow with the marketplace ecosystem." icon={<Ticket className="w-4 h-4 md:w-5 md:h-5 text-[#0077b6]" />} />
               </div>
             </div>
           </motion.div>

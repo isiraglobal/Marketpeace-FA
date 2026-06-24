@@ -135,7 +135,7 @@ export default function Navbar() {
             >
               <Link to="/vendors" onClick={() => setIsOpen(false)}>
                 <button className="px-6 sm:px-8 md:px-10 py-2.5 sm:py-3 md:py-4 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[8px] sm:text-[9px] md:text-xs uppercase shadow-2xl">
-                  JOIN THE SYSTEM
+                  GET STARTED
                 </button>
               </Link>
             </motion.div>

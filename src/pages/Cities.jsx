@@ -42,13 +42,13 @@ export default function Cities() {
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
         <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[10px] md:text-xs font-black uppercase mb-8 md:mb-10">
-          The Network
+          Coming Soon
         </span>
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          System <span className="not-italic text-stroke-blue">Expansion</span>
+          Find a Market <span className="not-italic text-stroke-blue">Near You</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 mb-6 md:mb-10">
-          MARKETPEACE is a growing global node network.
+          MARKETPEACE is expanding to a city near you. Check back for updates on upcoming events.
         </p>
       </motion.div>
 
@@ -65,13 +65,13 @@ export default function Cities() {
       </div>
 
       <div className="max-w-4xl w-full liquid-glass p-8 md:p-20 text-center relative overflow-hidden">
-        <h2 className="text-2xl md:text-5xl font-black mb-6 md:mb-8 tracking-tighter uppercase italic leading-[0.9] title">Node <span className="not-italic text-stroke-blue">Activation</span></h2>
+        <h2 className="text-2xl md:text-5xl font-black mb-6 md:mb-8 tracking-tighter uppercase italic leading-[0.9] title">Bring Marketpeace <span className="not-italic text-stroke-blue">To Your City</span></h2>
         <p className="text-white/50 text-base md:text-xl font-medium mb-10 md:mb-14 leading-relaxed px-4 description">
-          Rollout is strategic. Activating nodes to establish creator independence.
+          Want us to come to your city? Let us know and we'll prioritize the next rollout.
         </p>
         <Link to="/contact">
           <button className="px-10 md:px-12 py-4 md:py-5 bg-white text-[#061530] font-bold rounded-2xl tracking-[0.2em] text-[10px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl hover:-translate-y-1 btn-glow">
-            INITIATE REQUEST
+            REQUEST YOUR CITY
           </button>
         </Link>
       </div>

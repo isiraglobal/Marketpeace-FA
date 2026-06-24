@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoadingScreen from './components/LoadingScreen';
 import ErrorBoundary from './components/ErrorBoundary';
+import useLiquidGlass from './hooks/useLiquidGlass';
 
 // Lazy load pages for performance
 const Home = lazy(() => import('./pages/Home'));
@@ -74,6 +75,7 @@ function ScrollSetup() {
 }
 
 export default function App() {
+  useLiquidGlass();
   return (
     <Router>
       <div className="relative w-full bg-[#061530] text-white font-light">
