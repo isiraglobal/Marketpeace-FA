@@ -111,6 +111,7 @@ export default function Attendees() {
               {status.submitting ? 'PROCESSING...' : (ticketPrices[formData.ticketType] > 0 ? 'PAY $' + ticketPrices[formData.ticketType] + ' ACCESS' : 'GET FREE ACCESS')}
             </button>
             {status.success && <p className="text-green-400 text-center mt-4 text-xs font-bold">Access Pass Generated. Check your email for details.</p>}
+            {status.error && <p className="text-red-400 text-center mt-4 text-xs font-bold">{status.error}</p>}
           </form>
         </div>
       </div>

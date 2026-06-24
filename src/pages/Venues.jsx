@@ -80,6 +80,7 @@ export default function Venues() {
               {status.submitting ? 'SENDING...' : 'REQUEST PARTNERSHIP'}
             </button>
             {status.success && <p className="text-green-400 text-center mt-4 text-xs">Application sent! We'll be in touch.</p>}
+            {status.error && <p className="text-red-400 text-center mt-4 text-xs">{status.error}</p>}
           </form>
         </div>
       </div>

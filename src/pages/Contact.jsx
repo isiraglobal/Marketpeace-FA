@@ -129,6 +129,7 @@ export default function Contact() {
               {status.submitting ? 'SENDING...' : <><Send size={16} /> SEND MESSAGE</>}
             </button>
             {status.success && <p className="text-green-400 text-center mt-4 text-xs font-bold">Message sent! We'll be in touch soon.</p>}
+            {status.error && <p className="text-red-400 text-center mt-4 text-xs font-bold">{status.error}</p>}
           </form>
         </div>
       </div>
