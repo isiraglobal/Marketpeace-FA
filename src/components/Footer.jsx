@@ -36,19 +36,16 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="relative w-full overflow-hidden flex flex-col items-center mt-auto h-40 md:h-56">
+      <div className="relative w-full flex flex-col items-center mt-auto overflow-hidden">
+        <div className="w-full px-6 md:px-12 pb-4 md:pb-6 text-center md:text-left z-30">
+          <p className="text-[6px] sm:text-[7px] md:text-[9px] tracking-[0.1em] md:tracking-[0.2em] text-white/40 md:text-white/20 uppercase font-bold">© 2026 MARKETPEACE. ALL RIGHTS RESERVED. &nbsp;&nbsp;|&nbsp;&nbsp; SUPPORT LOCAL.</p>
+        </div>
         <img
           src="/assets/footer-market.png"
           alt="Cloud Market"
           loading="lazy"
-          className="w-full h-full object-cover object-top select-none pointer-events-none opacity-40 md:opacity-80"
-          style={{ objectPosition: '50% 20%' }}
+          className="w-full h-auto object-cover object-bottom select-none pointer-events-none opacity-50 md:opacity-80"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#061530] via-[#061530]/60 to-transparent pointer-events-none" />
-        <div className="absolute bottom-3 sm:bottom-5 md:bottom-6 left-0 w-full px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-6 text-center md:text-left z-30">
-          <p className="text-[6px] sm:text-[7px] md:text-[9px] tracking-[0.1em] md:tracking-[0.2em] text-white/40 md:text-white/20 uppercase font-bold">© 2026 MARKETPEACE. ALL RIGHTS RESERVED.</p>
-          <p className="text-[6px] sm:text-[7px] md:text-[9px] tracking-[0.1em] md:tracking-[0.2em] text-white/40 md:text-white/20 uppercase font-bold">SUPPORT LOCAL.</p>
-        </div>
       </div>
     </footer>
   );
