@@ -66,11 +66,11 @@ export default function Attendees() {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
-        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[10px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
+        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
           Get Tickets
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Shop Local.<br/><span className="not-italic text-stroke-blue">Discover New.</span>
+          Shop Local.<br/><span className="not-italic text-[#0090e0]">Discover New.</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10">
           MARKETPEACE brings together the best local vendors, live music, and good vibes — all under one roof. Come discover your new favorite brands and connect with your community.
@@ -88,7 +88,7 @@ export default function Attendees() {
 
         <div className="lg:col-span-5 liquid-glass p-4 sm:p-6 md:p-12 shadow-2xl relative overflow-hidden">
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0690d4]/20 rounded-full blur-[80px] pointer-events-none"></div>
-          <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-white mb-4 tracking-tighter uppercase italic leading-[0.9] title">Get Your <span className="not-italic text-stroke-blue">Tickets</span></h3>
+          <h3 className="text-lg sm:text-2xl md:text-3xl font-black text-white mb-4 tracking-tighter uppercase italic leading-[0.9] title">Get Your <span className="not-italic text-[#0090e0]">Tickets</span></h3>
           <p className="text-white/50 text-sm mb-8 md:mb-10 font-medium leading-relaxed description">Secure your spot at our next event. Early birds get exclusive perks.</p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 md:gap-8">
             <div>
@@ -107,7 +107,7 @@ export default function Attendees() {
                 <option value="Free-Friends" className="bg-[#061530]">Free (Bring 2 Friends)</option>
               </select>
             </div>
-            <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[9px] sm:text-[10px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 hover:-translate-y-1 active:translate-y-0 btn-glow">
+            <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 hover:-translate-y-1 active:translate-y-0 btn-glow">
               {status.submitting ? 'PROCESSING...' : (ticketPrices[formData.ticketType] > 0 ? 'PAY $' + ticketPrices[formData.ticketType] + ' ACCESS' : 'GET FREE ACCESS')}
             </button>
             {status.success && <p className="text-green-400 text-center mt-4 text-xs font-bold">Access Pass Generated. Check your email for details.</p>}
@@ -117,12 +117,12 @@ export default function Attendees() {
 
       <div className="max-w-5xl w-full liquid-glass p-8 md:p-16 text-center relative overflow-hidden mb-8">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#0690d4]/10 rounded-full blur-[100px] pointer-events-none"></div>
-        <h2 className="text-2xl md:text-5xl font-black mb-4 md:mb-6 tracking-tighter uppercase italic leading-[0.9] title">Upcoming <span className="not-italic text-stroke-blue">Events</span></h2>
+        <h2 className="text-2xl md:text-5xl font-black mb-4 md:mb-6 tracking-tighter uppercase italic leading-[0.9] title">Upcoming <span className="not-italic text-[#0090e0]">Events</span></h2>
         <p className="text-white/50 text-base md:text-xl font-medium mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed px-4 description">
           We're launching across NY, DC, and Atlanta. Find an event near you and join the community.
         </p>
         <Link to="/cities">
-          <button className="px-10 md:px-12 py-4 md:py-5 bg-white/5 border border-white/20 text-white font-bold rounded-2xl tracking-[0.2em] text-[10px] md:text-xs uppercase hover:bg-white/10 transition-all shadow-lg cursor-pointer hover:-translate-y-1">
+          <button className="px-10 md:px-12 py-4 md:py-5 bg-white/5 border border-white/20 text-white font-bold rounded-2xl tracking-[0.2em] text-[12px] md:text-xs uppercase hover:bg-white/10 transition-all shadow-lg cursor-pointer hover:-translate-y-1">
             VIEW EVENT SCHEDULE
           </button>
         </Link>

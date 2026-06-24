@@ -29,11 +29,11 @@ export default function Contact() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
-        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[10px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
+        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
           Get In Touch
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Let's <span className="not-italic text-stroke-blue">Talk</span>
+          Let's <span className="not-italic text-[#0090e0]">Talk</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10 description">
           Have a question about vending, attending, or partnering? We're here to help — drop us a line.
@@ -124,7 +124,7 @@ export default function Contact() {
             <button 
               type="submit" 
               disabled={status.submitting}
-              className="w-full mt-4 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-black rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[9px] sm:text-xs uppercase hover:bg-white/90 transition-all shadow-xl flex items-center justify-center gap-2 sm:gap-3 btn-glow"
+              className="w-full mt-4 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-black rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-xs uppercase hover:bg-white/90 transition-all shadow-xl flex items-center justify-center gap-2 sm:gap-3 btn-glow"
             >
               {status.submitting ? 'SENDING...' : <><Send size={16} /> SEND MESSAGE</>}
             </button>

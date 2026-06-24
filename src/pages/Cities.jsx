@@ -41,11 +41,11 @@ export default function Cities() {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
-        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[10px] md:text-xs font-black uppercase mb-8 md:mb-10">
+        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10">
           Coming Soon
         </span>
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Find a Market <span className="not-italic text-stroke-blue">Near You</span>
+          Find a Market <span className="not-italic text-[#0090e0]">Near You</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 mb-6 md:mb-10">
           MARKETPEACE is expanding to a city near you. Check back for updates on upcoming events.
@@ -65,12 +65,12 @@ export default function Cities() {
       </div>
 
       <div className="max-w-4xl w-full liquid-glass p-8 md:p-20 text-center relative overflow-hidden">
-        <h2 className="text-2xl md:text-5xl font-black mb-6 md:mb-8 tracking-tighter uppercase italic leading-[0.9] title">Bring Marketpeace <span className="not-italic text-stroke-blue">To Your City</span></h2>
+        <h2 className="text-2xl md:text-5xl font-black mb-6 md:mb-8 tracking-tighter uppercase italic leading-[0.9] title">Bring Marketpeace <span className="not-italic text-[#0090e0]">To Your City</span></h2>
         <p className="text-white/50 text-base md:text-xl font-medium mb-10 md:mb-14 leading-relaxed px-4 description">
           Want us to come to your city? Let us know and we'll prioritize the next rollout.
         </p>
         <Link to="/contact">
-          <button className="px-10 md:px-12 py-4 md:py-5 bg-white text-[#061530] font-bold rounded-2xl tracking-[0.2em] text-[10px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl hover:-translate-y-1 btn-glow">
+          <button className="px-10 md:px-12 py-4 md:py-5 bg-white text-[#061530] font-bold rounded-2xl tracking-[0.2em] text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl hover:-translate-y-1 btn-glow">
             REQUEST YOUR CITY
           </button>
         </Link>
@@ -84,7 +84,7 @@ function CityNode({ name, status, date }) {
     <div className="p-8 md:p-10 liquid-glass hover:bg-white/10 transition-all group relative overflow-hidden h-full flex flex-col items-center text-center">
       <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight italic uppercase title">{name}</h3>
       <span className="text-[#0077b6] text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block amount">{date}</span>
-      <span className="text-white/30 text-[8px] font-bold tracking-[0.2em] uppercase description">{status}</span>
+      <span className="text-white/30 text-[10px] font-bold tracking-[0.2em] uppercase description">{status}</span>
     </div>
   );
 }

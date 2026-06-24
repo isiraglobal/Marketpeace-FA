@@ -28,11 +28,11 @@ export default function Venues() {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
-        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[10px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
+        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
           Venue Partnerships
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Host an Event,<br/><span className="not-italic text-stroke-blue">Get Filled</span>
+          Host an Event,<br/><span className="not-italic text-[#0090e0]">Get Filled</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10">
           Partner with MARKETPEACE and we'll fill your space with 150+ engaged shoppers. You get the foot traffic, we handle the rest.
@@ -76,7 +76,7 @@ export default function Venues() {
               <label htmlFor="venue-notes" className="sr-only">Tell us about your space</label>
               <textarea id="venue-notes" placeholder="Tell us about your space..." className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0077b6] h-32 text-sm" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} />
             </div>
-            <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[9px] sm:text-[10px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 hover:-translate-y-1 active:translate-y-0 btn-glow">
+            <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 hover:-translate-y-1 active:translate-y-0 btn-glow">
               {status.submitting ? 'SENDING...' : 'REQUEST PARTNERSHIP'}
             </button>
             {status.success && <p className="text-green-400 text-center mt-4 text-xs">Application sent! We'll be in touch.</p>}

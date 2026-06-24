@@ -34,7 +34,7 @@ export default function Success() {
           <CheckCircle size={48} />
         </div>
         
-        <h1 className="text-4xl font-black mb-4 title uppercase italic">Payment <span className="not-italic text-stroke-blue">Confirmed</span></h1>
+        <h1 className="text-4xl font-black mb-4 title uppercase italic">Payment <span className="not-italic text-[#0090e0]">Confirmed</span></h1>
         <p className="text-white/50 text-lg mb-8 font-medium description">
           {/* SECURITY: type is whitelisted — rendering safe */}
           Your {type || 'registration'} is now synchronized. A confirmation has been sent to your email.

@@ -142,7 +142,7 @@ export default function Admin() {
             </div>
           </div>
           <h1 className="text-2xl font-black text-center mb-8 uppercase tracking-tighter italic">
-            Admin <span className="not-italic text-stroke-blue">Login</span>
+            Admin <span className="not-italic text-[#0090e0]">Login</span>
           </h1>
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
@@ -187,7 +187,7 @@ export default function Admin() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div>
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none mb-2">
-              System <span className="not-italic text-stroke-blue">Editor</span>
+              System <span className="not-italic text-[#0090e0]">Editor</span>
             </h1>
             <p className="text-white/40 text-xs md:text-sm tracking-[0.1em] font-medium uppercase">MarketPeace Global Node Management</p>
           </div>

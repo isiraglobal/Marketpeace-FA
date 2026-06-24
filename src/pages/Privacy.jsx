@@ -17,7 +17,7 @@ export default function Privacy() {
           <span className="text-xs font-bold tracking-widest uppercase">Back to Legal</span>
         </Link>
         <Shield className="w-12 h-12 text-[#0077b6] mb-6" />
-        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-10 md:mb-12 uppercase italic title">Privacy <span className="not-italic text-stroke-blue">Policy</span></h1>
+        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-10 md:mb-12 uppercase italic title">Privacy <span className="not-italic text-[#0090e0]">Policy</span></h1>
         
         <div className="liquid-glass p-8 md:p-16 w-full space-y-12 text-white/50 font-medium leading-relaxed text-sm sm:text-base md:text-lg description">
           <section>

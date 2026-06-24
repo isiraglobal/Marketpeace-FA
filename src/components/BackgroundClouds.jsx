@@ -11,10 +11,10 @@ const noiseOverlayStyle = {
   backgroundSize: "100px",
 };
 
-const NB_CLOUDS = 30;
+const NB_CLOUDS = 12;
 
 const cloudConfigs = Array.from({ length: NB_CLOUDS }, (_, i) => {
-  const depthLayer = Math.floor(i / 10);
+  const depthLayer = Math.floor(i / 4);
   const depthScale = [1.5, 1, 0.6][depthLayer] || 0.6;
   const zRange = depthLayer === 0 ? [-12, -2] : depthLayer === 1 ? [-2, 8] : [8, 20];
   const z = zRange[0] + Math.random() * (zRange[1] - zRange[0]);
@@ -23,7 +23,7 @@ const cloudConfigs = Array.from({ length: NB_CLOUDS }, (_, i) => {
 
   return {
     seed: i + 10,
-    segments: Math.floor(2 + Math.random() * 3),
+    segments: 2,
     position: [
       (Math.random() - 0.5) * 40,
       -15 + Math.random() * 20,
@@ -156,9 +156,9 @@ export default function BackgroundClouds() {
       {showClouds && (
         <Canvas
           shadows={false}
-          dpr={[1, 1.5]}
+          dpr={[1, 1.25]}
           camera={{ position: [0, 0, 5], fov: 70 }}
-          gl={{ antialias: true, powerPreference: 'high-performance' }}
+          gl={{ antialias: false, powerPreference: 'high-performance' }}
           style={{ background: 'linear-gradient(180deg, #4A90D9 0%, #87CEEB 40%, #B0D4F1 70%, #D4E6F1 100%)' }}
         >
           <CloudScene />

@@ -12,10 +12,10 @@ export default function Legal() {
         transition={{ duration: 0.8 }}
         className="max-w-4xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
-        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[10px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
+        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
           Legal & Agreements
         </span>
-        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-6 md:mb-10 text-white leading-[0.95] uppercase italic">Transparency & <span className="not-italic text-stroke-blue">Security</span></h1>
+        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-6 md:mb-10 text-white leading-[0.95] uppercase italic">Transparency & <span className="not-italic text-[#0090e0]">Security</span></h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-2xl font-medium px-4">
           Foreign Affairs LLC is committed to safe, insured, and transparent events. Review our public policies and vendor agreements below.
         </p>
@@ -51,7 +51,7 @@ export default function Legal() {
               Preview our standard vendor contract. It details booth fees, deposit structure, our $1M liability insurance, and your rights to digital content.
             </p>
           </div>
-          <a href="mailto:legal@foreignaffairsmarket.com?subject=Vendor%20Agreement%20Request" className="w-full md:w-auto px-10 py-3.5 bg-white text-[#061530] font-bold rounded-xl tracking-widest text-[10px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl whitespace-nowrap btn-glow inline-block text-center">
+          <a href="mailto:legal@foreignaffairsmarket.com?subject=Vendor%20Agreement%20Request" className="w-full md:w-auto px-10 py-3.5 bg-white text-[#061530] font-bold rounded-xl tracking-widest text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl whitespace-nowrap btn-glow inline-block text-center">
             REQUEST AGREEMENT
           </a>
         </div>
