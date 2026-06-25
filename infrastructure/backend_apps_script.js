@@ -10,10 +10,12 @@
  * 4. Project Settings → Script Properties → Add:
  *    - DISCORD_WEBHOOK_URL: Your Discord webhook URL
  *    - INTERNAL_SECRET: Strong random string (same as Vercel's INTERNAL_WEBHOOK_SECRET)
+ *    - VENUE_WEBHOOK_URL: https://marketpeace.isira.club/api/venues/sync
  * 5. Deploy → New Deployment → Web app → Execute as: Me → Anyone
  * 6. Copy the deployment URL → set as GOOGLE_SCRIPT_URL in Vercel env
  * 7. Triggers → Add Trigger → function: autoSync, time-driven, every 5 min
  * 8. Triggers → Add Trigger → function: dailyReport, time-driven, every day 9-10am
+ * 9. Triggers → Add Trigger → function: onEdit, event type: On change
  */
 
 const SHEET_ID = '1U4OAHwkntuIlcgWUbtAFJ2R0hBkyTqSJHtmmzsjEa1g';
