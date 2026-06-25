@@ -85,8 +85,9 @@ function setupSheets() {
   SHEET_DEFS.forEach(def => {
     let sheet = ss.getSheetByName(def.name);
     if (sheet) {
-      const r = confirm(`Sheet "${def.name}" already exists. Overwrite it? Click Cancel to skip.`);
-      if (!r) return;
+      const ui = SpreadsheetApp.getUi();
+      const r = ui.alert(`Sheet "${def.name}" already exists. Overwrite it?`, ui.ButtonSet.YES_NO);
+      if (r !== ui.Button.YES) return;
       ss.deleteSheet(sheet);
     }
     sheet = ss.insertSheet(def.name);
