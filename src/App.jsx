@@ -88,11 +88,14 @@ export default function App() {
   return (
     <Router>
       <div className="relative w-full bg-transparent text-white font-light">
-        {/* Animated fluid blob background - Sunny Day Sky to Navy Blue */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-gradient-to-b from-[#60a5fa] via-[#1e3a8a] to-[#030712]">
-          <div className="absolute -top-[15%] left-[10%] w-[65vw] h-[65vw] rounded-full bg-white/20 blur-[130px] animate-blob-1"></div>
-          <div className="absolute top-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[#93c5fd]/30 blur-[120px] animate-blob-2"></div>
-          <div className="absolute -bottom-[10%] -left-[10%] w-[75vw] h-[75vw] rounded-full bg-[#0077b6]/25 blur-[140px] animate-blob-3"></div>
+        {/* Background - Vibrant Sky Blue with Grains */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#0690d4]">
+          {/* Noise overlay for grain texture */}
+          <div className="absolute inset-0 opacity-[0.18] mix-blend-overlay pointer-events-none" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'repeat',
+            backgroundSize: '100px'
+          }} />
         </div>
         <LoadingScreen />
         <ScrollSetup />

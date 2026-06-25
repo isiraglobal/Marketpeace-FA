@@ -12,7 +12,7 @@
     --text-muted: rgba(255, 255, 255, 0.5);
     --accent-blue: #0077b6;
     --accent-blue-glow: rgba(0, 119, 182, 0.4);
-    --bg-dark: #0c1b3a;
+    --bg-dark: #006cb6;
     --glass-x: 50%;
     --glass-y: 50%;
   }
@@ -31,6 +31,7 @@
     margin: 0;
     padding: 0;
     background-color: var(--bg-dark);
+    background-image: radial-gradient(circle at top, rgba(0, 119, 182, 0.15), transparent 30%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.06), transparent 18%);
     color: var(--text-primary);
     overflow-x: hidden;
   }
