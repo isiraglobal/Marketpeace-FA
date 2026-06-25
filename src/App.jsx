@@ -87,16 +87,7 @@ export default function App() {
   useLiquidGlass();
   return (
     <Router>
-      <div className="relative w-full bg-transparent text-white font-light">
-        {/* Background - Vibrant Sky Blue with Grains */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#0690d4]">
-          {/* Noise overlay for grain texture */}
-          <div className="absolute inset-0 opacity-[0.18] mix-blend-overlay pointer-events-none" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E")`,
-            backgroundRepeat: 'repeat',
-            backgroundSize: '100px'
-          }} />
-        </div>
+      <div className="relative w-full bg-[#061530] text-white font-light">
         <LoadingScreen />
         <ScrollSetup />
         <Cursor />
