@@ -185,6 +185,7 @@ function doPost(e) {
       case 'getCities':     return handleGetCities(ss);
       case 'updateCities':  return handleUpdateCities(ss, data);
       case 'getVenues':     return handleGetVenues(ss);
+      case 'updateVenue':   return handleUpdateVenue(ss, data);
       case 'getAnalytics':  return handleGetAnalytics(ss);
       case 'syncData':      return handleSyncData(ss, data);
       case 'health':        return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID });
@@ -296,13 +297,75 @@ function handleGetVenues(ss) {
   const sheet = ss.getSheetByName('Venues');
   if (!sheet || sheet.getLastRow() < 2) return respond([]);
   const rows = sheet.getDataRange().getValues();
+  const headers = rows[0];
   const venues = [];
   for (let i = 1; i < rows.length; i++) {
-    if (rows[i][0] && String(rows[i][1]) === 'Approved') {
-      venues.push({ name: String(rows[i][2] || ''), location: String(rows[i][6] || ''), city: String(rows[i][7] || ''), capacity: String(rows[i][8] || '') });
+    const r = rows[i];
+    if (r[0]) {
+      venues.push({
+        timestamp: String(r[0] || ''),
+        status: String(r[1] || ''),
+        venueName: String(r[2] || ''),
+        contactName: String(r[3] || ''),
+        email: String(r[4] || ''),
+        phone: String(r[5] || ''),
+        location: String(r[6] || ''),
+        city: String(r[7] || ''),
+        capacity: String(r[8] || ''),
+        hasParking: String(r[9] || ''),
+        hasWiFi: String(r[10] || ''),
+        indoorOutdoor: String(r[11] || ''),
+        notes: String(r[12] || ''),
+        contractURL: String(r[13] || ''),
+        eventDate: String(r[14] || ''),
+        lastUpdated: String(r[15] || ''),
+      });
     }
   }
   return respond(venues);
+}
+
+/* ─── Action: updateVenue (sync from site back to sheet) ─── */
+function handleUpdateVenue(ss, data) {
+  const sheet = ensureSheet(ss, 'Venues');
+  const rows = sheet.getDataRange().getValues();
+  const def = getDef('Venues');
+  // Try to find existing venue by VenueName
+  let found = -1;
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][2] || '').toLowerCase() === String(data.venueName || '').toLowerCase()) {
+      found = i;
+      break;
+    }
+  }
+  const venue = data.venue || {};
+  const row = [
+    nowISO(),
+    sanitize(venue.status || (found >= 0 ? String(rows[found][1]) : 'In Review'), 50),
+    sanitize(venue.venueName || data.venueName || '', 150),
+    sanitize(venue.contactName || '', 100),
+    sanitize(venue.email || '', 254),
+    sanitize(venue.phone || '', 20),
+    sanitize(venue.location || '', 200),
+    sanitize(venue.city || '', 100),
+    sanitize(venue.capacity || '', 20),
+    sanitize(venue.hasParking || '', 10),
+    sanitize(venue.hasWiFi || '', 10),
+    sanitize(venue.indoorOutdoor || '', 20),
+    sanitize(venue.notes || '', 1000),
+    sanitize(venue.contractURL || '', 200),
+    sanitize(venue.eventDate || '', 50),
+    nowISO(),
+  ];
+  if (found >= 0) {
+    // Update existing row
+    sheet.getRange(found + 1, 1, 1, row.length).setValues([row]);
+    return respond({ success: true, action: 'updated', row: found + 1 });
+  } else {
+    // Append new row
+    sheet.appendRow(row);
+    return respond({ success: true, action: 'created' });
+  }
 }
 
 /* ─── Action: getAnalytics ─── */
@@ -445,7 +508,51 @@ function notifyDiscord(title, desc, color) {
 }
 
 /* ═══════════════════════════════════════════
-   AUTO SYNC & REPORTING
+   REAL-TIME SYNC — onEdit sends venue changes to Vercel
+   ═══════════════════════════════════════════ */
+function onEdit(e) {
+  const sheet = e.range.getSheet();
+  const sheetName = sheet.getName();
+  if (sheetName !== 'Venues') return;
+  if (e.range.getRow() < 2) return;
+
+  const row = sheet.getRange(e.range.getRow(), 1, 1, 16).getValues()[0];
+  const payload = {
+    timestamp: String(row[0] || ''),
+    status: String(row[1] || ''),
+    venueName: String(row[2] || ''),
+    contactName: String(row[3] || ''),
+    email: String(row[4] || ''),
+    phone: String(row[5] || ''),
+    location: String(row[6] || ''),
+    city: String(row[7] || ''),
+    capacity: String(row[8] || ''),
+    hasParking: String(row[9] || ''),
+    hasWiFi: String(row[10] || ''),
+    indoorOutdoor: String(row[11] || ''),
+    notes: String(row[12] || ''),
+    contractURL: String(row[13] || ''),
+    eventDate: String(row[14] || ''),
+    lastUpdated: String(row[15] || ''),
+  };
+
+  const WEBHOOK_URL = PROPS.getProperty('VENUE_WEBHOOK_URL');
+  if (!WEBHOOK_URL) return;
+
+  try {
+    UrlFetchApp.fetch(WEBHOOK_URL, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ _secret: INTERNAL_SECRET, venue: payload, action: 'venueUpdated' }),
+      muteHttpExceptions: true,
+    });
+  } catch (err) {
+    console.error('onEdit webhook failed:', err.toString());
+  }
+}
+
+/* ═══════════════════════════════════════════
+   DISABLE ORIGINAL onEdit — kept for compatibility
    ═══════════════════════════════════════════ */
 function autoSync() {
   const ss = SpreadsheetApp.openById(SHEET_ID);

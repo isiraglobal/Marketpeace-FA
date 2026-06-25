@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Users, Zap, Ticket, Camera, Play } from 'lucide-react';
+import { MapPin, Users, Zap, Ticket, Camera, Play, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { fetchCheckoutSession } from '../utils/stripeCheckout';
 
@@ -21,6 +21,7 @@ const letters = [
 
 export default function Home() {
   const [cityNodes, setCityNodes] = useState([]);
+  const [venueNodes, setVenueNodes] = useState([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
 
@@ -38,7 +39,21 @@ export default function Home() {
         console.error("Node sync failed:", err);
       }
     };
+
+    const fetchVenues = async () => {
+      try {
+        const response = await fetch('/api/venues');
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) setVenueNodes(data);
+        }
+      } catch {
+        // silent
+      }
+    };
+
     fetchCities();
+    fetchVenues();
   }, []);
 
   const handleQuickCheckout = async ({ type, tier }) => {
@@ -259,7 +274,7 @@ export default function Home() {
         </div>
       </section>
 
-      <HomeSections cityNodes={cityNodes} />
+      <HomeSections cityNodes={cityNodes} venueNodes={venueNodes} />
     </div>
   );
 }
@@ -436,12 +451,12 @@ function MobileHome({ cityNodes, checkoutLoading, checkoutError, handleQuickChec
       </section>
 
       {/* Rest of the sections - referral, gallery, etc. */}
-      <HomeSections cityNodes={cityNodes} />
+      <HomeSections cityNodes={cityNodes} venueNodes={venueNodes} />
     </div>
   );
 }
 
-function HomeSections({ cityNodes }) {
+function HomeSections({ cityNodes, venueNodes }) {
   return (
     <>
       <section id="referral" className="max-w-4xl w-full mx-auto flex flex-col items-center py-10 md:py-16 px-4 md:px-6 scroll-mt-24">
@@ -459,6 +474,43 @@ function HomeSections({ cityNodes }) {
           <button className="px-8 py-4 bg-transparent border border-white/20 text-white rounded-xl text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/5 transition-all w-full">Join the Network</button>
         </Link>
       </section>
+
+      {/* UPCOMING EVENTS */}
+      {venueNodes.length > 0 && (
+        <section className="w-full py-10 md:py-16 px-4 md:px-6">
+          <div className="max-w-7xl w-full mx-auto">
+            <div className="flex items-center gap-4 mb-8 md:mb-12">
+              <div className="h-px flex-1 bg-white/5" />
+              <h2 className="text-white text-sm md:text-lg font-black tracking-[0.3em] uppercase italic text-center opacity-80 shrink-0">Upcoming Events</h2>
+              <div className="h-px flex-1 bg-white/5" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {venueNodes
+                .filter(v => v.eventDate && (v.status === 'Approved' || v.status === 'Active'))
+                .sort((a, b) => a.eventDate.localeCompare(b.eventDate))
+                .slice(0, 6)
+                .map((v, i) => (
+                  <Link key={i} to="/venues" className="block group">
+                    <div className="liquid-glass p-5 md:p-6 group-hover:border-[#0077b6]/40 transition-all">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Calendar className="w-3.5 h-3.5 text-[#0090e0]" />
+                        <span className="text-[#0090e0] text-[10px] font-black uppercase tracking-widest">{v.eventDate}</span>
+                      </div>
+                      <h3 className="text-white font-black text-base md:text-lg uppercase italic tracking-tight title mb-1">{v.venueName}</h3>
+                      {v.location && (
+                        <p className="text-white/50 text-[11px] font-medium flex items-center gap-1.5">
+                          <MapPin className="w-3 h-3 text-[#0077b6]" />
+                          {v.location}{v.city ? `, ${v.city}` : ''}
+                        </p>
+                      )}
+                      <span className="inline-block mt-3 text-[#0077b6] text-[10px] font-black uppercase tracking-widest group-hover:translate-x-1 transition-transform">View Details →</span>
+                    </div>
+                  </Link>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="w-full py-10 md:py-16 px-4 md:px-6 relative overflow-hidden bg-white/[0.01]">
         <div className="max-w-7xl w-full mx-auto">
