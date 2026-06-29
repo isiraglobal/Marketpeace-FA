@@ -33,6 +33,8 @@ export default function BackgroundCanvas() {
         playsInline
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-[#193546]/40" />
     </div>
   )
 }

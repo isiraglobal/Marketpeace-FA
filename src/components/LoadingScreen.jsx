@@ -10,11 +10,10 @@ export default function LoadingScreen() {
   useEffect(() => {
     const played = sessionStorage.getItem(SESSION_KEY)
     if (played) return
-
     setShow(true)
   }, [])
 
-  const handleEnded = () => {
+  const dismiss = () => {
     sessionStorage.setItem(SESSION_KEY, 'true')
     setShow(false)
   }
@@ -26,7 +25,8 @@ export default function LoadingScreen() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[1000] bg-black flex items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-[1000] bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+          onClick={dismiss}
         >
           <video
             ref={videoRef}
@@ -34,9 +34,12 @@ export default function LoadingScreen() {
             autoPlay
             muted
             playsInline
-            onEnded={handleEnded}
+            onEnded={dismiss}
             className="w-full h-full object-cover"
           />
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/30 text-[11px] tracking-[0.3em] font-black uppercase animate-pulse">
+            Tap anywhere to skip
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

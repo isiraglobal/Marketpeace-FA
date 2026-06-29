@@ -84,9 +84,9 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.6, duration: 1.5 }}
-            className="mb-8 md:mb-12"
+            className="mb-8 md:mb-10 text-center"
           >
-            <span className="liquid-text-bg text-[10px] sm:text-[10px] tracking-[0.4em] text-[#0DB8D3] font-black uppercase">The Infrastructure of Independence</span>
+            <span className="text-[#0DB8D3] text-[10px] sm:text-[11px] tracking-[0.4em] font-black uppercase">The Infrastructure of Independence</span>
           </motion.div>
 
           <h2 className="text-white text-sm sm:text-lg md:text-2xl lg:text-3xl lg:whitespace-nowrap tracking-[0.25em] font-black mb-8 md:mb-10 text-center uppercase italic leading-relaxed max-w-[90vw] sm:max-w-[80vw] lg:max-w-none">
@@ -97,32 +97,19 @@ export default function Home() {
             The vendor-event marketplace connecting small businesses, cool venues, and the communities that love them.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8 mb-8">
-            <Link to="/vendors">
-              <button className="flex items-center justify-center gap-3 bg-white text-[#193546] px-6 py-4 sm:px-10 sm:py-5 rounded-xl text-[12px] sm:text-[12px] font-black tracking-[0.2em] hover:bg-white/90 transition-all shadow-2xl uppercase btn-glow">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-8 mb-10 sm:mb-16 w-full max-w-3xl px-4">
+            <Link to="/vendors" className="w-full sm:w-auto flex-1">
+              <button className="w-full flex items-center justify-center gap-3 bg-white text-[#193546] px-6 py-4 rounded-xl text-[12px] font-black tracking-[0.2em] hover:bg-white/90 transition-all shadow-2xl uppercase btn-glow">
                 Apply as Vendor
               </button>
             </Link>
-            <Link to="/venues">
-              <button className="flex items-center justify-center gap-3 liquid-glass text-white px-6 py-4 sm:px-10 sm:py-5 rounded-xl text-[12px] sm:text-[12px] font-black tracking-[0.2em] hover:bg-black/60 transition-all shadow-xl uppercase">
-                Partner Your Venue
-              </button>
-            </Link>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10 sm:mb-12">
-            <Link to="/vendors" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#0DB8D3] text-white font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-[#1B7FDC]">
-                Sign Up as Vendor
-              </button>
-            </Link>
-            <Link to="/attendees" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white text-[#193546] font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-white/90">
+            <Link to="/attendees" className="w-full sm:w-auto flex-1">
+              <button className="w-full flex items-center justify-center gap-3 bg-[#0DB8D3] text-white px-6 py-4 rounded-xl text-[12px] font-black tracking-[0.2em] hover:bg-[#1B7FDC] transition-all shadow-xl uppercase">
                 Register as Attendee
               </button>
             </Link>
-            <Link to="/venues" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto px-5 py-3 rounded-2xl border border-white/15 text-white font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:border-white/40 hover:bg-white/5">
+            <Link to="/venues" className="w-full sm:w-auto flex-1">
+              <button className="w-full flex items-center justify-center gap-3 liquid-glass text-white px-6 py-4 rounded-xl text-[12px] font-black tracking-[0.2em] hover:bg-black/60 transition-all shadow-xl uppercase">
                 Partner Your Venue
               </button>
             </Link>
@@ -151,7 +138,7 @@ export default function Home() {
       {/* ABOUT */}
       <section className="w-full flex flex-col items-center px-4 py-16 md:py-24">
         <div className="max-w-6xl w-full flex flex-col items-center text-center">
-          <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-14">About Marketpeace</span>
+          <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-10">About Marketpeace</span>
           <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter mb-6 md:mb-12 italic uppercase leading-[0.95]">Who can be a vendor? <span className="not-italic text-[#1B7FDC]">Anyone</span> can be a vendor.</h2>
           <p className="text-white/60 text-[11px] sm:text-base md:text-lg lg:text-xl font-medium mb-8 md:mb-16 max-w-3xl leading-relaxed">
             Marketpeace is a platform that connects four pillars of the local economy into one thriving marketplace.
@@ -168,7 +155,7 @@ export default function Home() {
       {/* HOW IT WORKS */}
       <section className="w-full flex flex-col items-center px-4 py-16 md:py-24">
         <div className="max-w-6xl w-full flex flex-col items-center">
-          <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-14">How it Works</span>
+          <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-10">How it Works</span>
           <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-8xl font-black text-white mb-8 md:mb-20 tracking-tighter text-center italic uppercase leading-[0.95]">From application to <span className="not-italic text-[#1B7FDC]">profit</span> in 3 steps</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10 w-full">
             <JourneyStep number="01" title="Apply" desc="Tell us about your brand or venue." />
@@ -184,7 +171,7 @@ export default function Home() {
         <div className="max-w-7xl w-full flex flex-col lg:flex-row gap-8 md:gap-20 items-center lg:items-start justify-center">
           <div className="w-full lg:w-[50%]">
             <div className="flex items-center gap-3 mb-4">
-              <span className="liquid-text-bg text-white tracking-[0.3em] text-[10px] font-black uppercase inline-block mb-4">Vendor Application</span>
+              <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] font-black uppercase inline-block mb-4">Vendor Application</span>
               <span className="text-[#0DB8D3] bg-[#0DB8D3]/10 px-3 py-1 rounded-full tracking-[0.2em] text-[10px] font-black uppercase inline-block border border-[#0DB8D3]/20 animate-pulse">Limited Slots Remaining</span>
             </div>
             <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 md:mb-8 tracking-tighter uppercase italic leading-[0.95]">Your booth. Your crowd. <span className="not-italic text-[#1B7FDC]">Your commission.</span></h3>
@@ -271,7 +258,7 @@ function HomeSections({ cityNodes, venueNodes }) {
   return (
     <>
       <section id="referral" className="max-w-4xl w-full mx-auto flex flex-col items-center py-10 md:py-16 px-4 md:px-6 scroll-mt-24">
-        <span className="text-white bg-[#0DB8D3] px-3 py-1 rounded-full tracking-[0.4em] text-[10px] font-black uppercase mb-4 md:mb-6">The Referral Network</span>
+        <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] font-black uppercase mb-4 md:mb-6">The Referral Network</span>
         <h3 className="text-2xl md:text-3xl font-black text-white mb-4 md:mb-8 tracking-tighter uppercase italic leading-[0.9] text-center">Get paid for being <span className="not-italic text-[#1B7FDC] whitespace-nowrap">part of the market.</span></h3>
         <p className="text-white/60 text-sm md:text-base leading-relaxed font-medium mb-8 md:mb-12 text-center max-w-2xl">Our referral program is simple: everyone wins. Vendors, venues, and enthusiasts can participate.</p>
         <div className="w-full space-y-3">

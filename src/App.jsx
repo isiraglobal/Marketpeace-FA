@@ -2,7 +2,6 @@ import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Lenis from 'lenis';
 
-import Cursor from './components/Cursor';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoadingScreen from './components/LoadingScreen';
@@ -88,12 +87,11 @@ export default function App() {
   useLiquidGlass();
   return (
     <Router>
-      <div className="relative w-full bg-[#193546] text-white font-light">
+      <div className="relative w-full min-h-screen bg-[#193546] text-white font-light">
         <BackgroundCanvas />
         <div className="relative z-[1]">
           <LoadingScreen />
           <ScrollSetup />
-          <Cursor />
           <Navbar />
           <Suspense fallback={
             <div className="min-h-screen bg-transparent flex items-center justify-center">
