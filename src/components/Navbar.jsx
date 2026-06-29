@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Navbar() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const { scrollY } = useScroll();
+  const [scrolled, setScrolled] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -20,137 +25,138 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious();
-    if (latest > previous && latest > 150) {
-      setHidden(true);
-    } else {
-      setHidden(false);
-    }
-  });
-
   const navLinks = [
-    { name: 'HOME', path: '/' },
-    { name: 'FOR VENDORS', path: '/vendors' },
-    { name: 'FOR ATTENDEES', path: '/attendees' },
-    { name: 'FOR VENUES', path: '/venues' },
-    { name: 'CITIES', path: '/cities' },
+    { name: 'Home', path: '/' },
+    { name: 'Markets', path: '/cities' },
+    { name: 'Vendors', path: '/vendors' },
+    { name: 'Community', path: '/attendees' },
   ];
 
   return (
     <>
-      <motion.nav 
-        variants={{
-          visible: { y: 0, opacity: 1 },
-          hidden: { y: -120, opacity: 0 }
-        }}
-        animate={hidden ? "hidden" : "visible"}
-        transition={{ duration: 0.35, ease: "easeInOut" }}
-        className="fixed top-0 left-0 w-full z-[100] px-4 sm:px-6 md:px-12 py-3 sm:py-4 md:py-6 flex items-center justify-between bg-[#061530]/80 backdrop-blur-3xl border-b border-white/5 shadow-2xl"
-        style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-[100] flex justify-center pt-5 px-6 pointer-events-none"
+        initial={{ opacity: 0, y: -24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        style={{ paddingTop: 'max(1.25rem, env(safe-area-inset-top))' }}
       >
-        <div className="flex items-center gap-6 sm:gap-10 md:gap-12">
-          <Link to="/" onClick={() => setIsOpen(false)} className="hover:scale-105 transition-transform">
-            <h1 className="text-xl sm:text-2xl font-black tracking-[0.1em] sm:tracking-[0.15em] md:tracking-[0.2em] text-white uppercase italic">MARKETPEACE</h1>
-          </Link>
-          <div className="hidden lg:flex items-center gap-6 md:gap-8 lg:gap-10 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] text-white">
-            {navLinks.map((link) => (
-              <NavLink key={link.path} to={link.path} current={location.pathname === link.path}>
-                {link.name}
-              </NavLink>
-            ))}
-          </div>
-        </div>
+        <div
+          className={`flex items-center gap-8 px-6 py-3 rounded-full transition-all duration-500 liquid-glass pointer-events-auto ${
+            scrolled ? 'navbar-capsule-scrolled py-2.5 px-6' : 'navbar-capsule-top'
+          }`}
+        >
+          {/* Links */}
+          <nav
+            className="flex items-center gap-6 text-sm"
+            style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
+          >
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`relative transition-colors duration-300 text-xs font-semibold uppercase tracking-wider ${
+                    isActive ? 'text-white' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {link.name}
+                  {isActive && (
+                    <motion.span
+                      layoutId="activeIndicator"
+                      className="absolute -bottom-1.5 left-0 w-full h-[1.5px] bg-[#0DB8D3]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
 
-        <div className="flex items-center gap-4 md:gap-6">
-          <Link to="/vendors">
-            <button className="px-4 sm:px-6 py-2 bg-white text-[#061530] font-black rounded-lg tracking-[0.1em] sm:tracking-[0.2em] text-[8px] sm:text-[10px] uppercase hover:bg-[#0077b6] hover:text-white transition-all shadow-lg btn-glow">
-              JOIN
+          {/* CTA */}
+          <Link to="/vendors" className="hidden sm:inline-flex">
+            <button
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-white text-xs font-bold uppercase tracking-wider transition-all hover:scale-105 hover:bg-[#0bc1dd] hover:shadow-[0_0_20px_rgba(13,184,211,0.4)] btn-glow"
+              style={{
+                background: '#0DB8D3',
+                fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                boxShadow: "0 2px 12px rgba(13, 184, 211, 0.25)",
+              }}
+            >
+              Join Now
             </button>
           </Link>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
-            className="relative"
-          >
-            <div className="absolute inset-0 bg-[#0077b6]/20 blur-xl rounded-full animate-pulse" />
-            <img 
-              src="/assets/logo.png" 
-              alt="MARKETPEACE Logo" 
-              loading="lazy"
-              className="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 object-contain relative z-10 mix-blend-multiply brightness-125"
-            />
-          </motion.div>
-          <button 
+
+          {/* Mobile toggle */}
+          <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center text-white relative z-[101]"
+            className="sm:hidden w-8 h-8 flex items-center justify-center relative z-50 text-white hover:text-[#0DB8D3] transition-colors"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
-      </motion.nav>
+      </motion.header>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[90] bg-[#061530] flex flex-col items-center justify-center p-8 lg:hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[99] bg-[#193546] flex flex-col items-center justify-center p-8 sm:hidden"
           >
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0077b6]/10 rounded-full blur-[120px]"></div>
-              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[120px]"></div>
+              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0DB8D3]/10 rounded-full blur-[120px]" />
+              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[120px]" />
             </div>
 
-            <div className="flex flex-col items-center gap-10 z-10">
+            <div className="flex flex-col items-center gap-8 z-10">
               {navLinks.map((link, idx) => (
                 <motion.div
                   key={link.path}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + idx * 0.05 }}
+                  transition={{ delay: 0.05 * idx }}
                 >
                   <Link
                     to={link.path}
                     onClick={() => setIsOpen(false)}
-                    className={`text-2xl font-medium tracking-[0.2em] transition-colors ${
-                      location.pathname === link.path ? 'text-white' : 'text-white/40 hover:text-white'
+                    className={`text-xl font-semibold tracking-widest uppercase transition-colors ${
+                      location.pathname === link.path ? 'text-white' : 'text-white/55 hover:text-white'
                     }`}
+                    style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
                   >
                     {link.name}
                   </Link>
                 </motion.div>
               ))}
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="mt-8"
+              >
+                <Link to="/vendors" onClick={() => setIsOpen(false)}>
+                  <button
+                    className="px-8 py-3 rounded-full text-white text-sm font-bold uppercase tracking-wider transition-all hover:scale-105 hover:bg-[#0bc1dd]"
+                    style={{
+                      background: '#0DB8D3',
+                      fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+                      boxShadow: "0 2px 12px rgba(13, 184, 211, 0.25)",
+                    }}
+                  >
+                    Join Now
+                  </button>
+                </Link>
+              </motion.div>
             </div>
-            
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mt-20 z-10"
-            >
-              <Link to="/vendors" onClick={() => setIsOpen(false)}>
-                <button className="px-6 sm:px-8 md:px-10 py-2.5 sm:py-3 md:py-4 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[8px] sm:text-[9px] md:text-xs uppercase shadow-2xl">
-                  GET STARTED
-                </button>
-              </Link>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-function NavLink({ to, children, current }) {
-  return (
-    <Link to={to} className={`relative group transition-colors ${current ? 'text-white' : 'text-white/60 hover:text-white'}`}>
-      {children}
-      <span className={`absolute -bottom-2 left-0 w-full h-[1.5px] bg-[#0077b6] transform origin-left transition-transform duration-500 ${current ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
-    </Link>
   );
 }

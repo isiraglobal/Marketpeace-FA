@@ -34,7 +34,7 @@ export default function Success() {
           <CheckCircle size={48} />
         </div>
         
-        <h1 className="text-4xl font-black mb-4 title uppercase italic">Payment <span className="not-italic text-[#0090e0]">Confirmed</span></h1>
+        <h1 className="text-4xl font-black mb-4 title uppercase italic">Payment <span className="not-italic text-[#1B7FDC]">Confirmed</span></h1>
         <p className="text-white/50 text-lg mb-8 font-medium description">
           {/* SECURITY: type is whitelisted — rendering safe */}
           Your {type || 'registration'} is now synchronized. A confirmation has been sent to your email.
@@ -42,7 +42,7 @@ export default function Success() {
 
         {transactionID && (
           <div className="bg-white/5 rounded-2xl p-6 mb-10 inline-block">
-            <p className="text-xs text-[#0077b6] font-black uppercase tracking-widest mb-1 amount">Transaction ID</p>
+            <p className="text-xs text-[#0DB8D3] font-black uppercase tracking-widest mb-1 amount">Transaction ID</p>
             {/* SECURITY: transactionID validated against regex before rendering */}
             <p className="text-xl font-black text-white title">{transactionID}</p>
           </div>
@@ -50,7 +50,7 @@ export default function Success() {
 
         <div className="flex flex-col gap-4">
           <Link to="/">
-            <button className="w-full py-4 bg-white text-[#061530] font-black rounded-xl tracking-widest hover:bg-white/90 transition-all flex items-center justify-center gap-2 btn-glow">
+            <button className="w-full py-4 bg-white text-[#193546] font-black rounded-xl tracking-widest hover:bg-white/90 transition-all flex items-center justify-center gap-2 btn-glow">
               RETURN TO HOME <ArrowRight size={18} />
             </button>
           </Link>

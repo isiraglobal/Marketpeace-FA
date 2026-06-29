@@ -67,7 +67,7 @@ function VenueModal({ venue, onClose }) {
         <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic tracking-tight title">{venue.venueName}</h2>
           {venue.eventDate && (
-            <span className="text-[#0090e0] text-sm font-bold tracking-widest uppercase">{venue.eventDate}</span>
+            <span className="text-[#1B7FDC] text-sm font-bold tracking-widest uppercase">{venue.eventDate}</span>
           )}
         </div>
 
@@ -76,7 +76,7 @@ function VenueModal({ venue, onClose }) {
             <div key={i} className={`${!f.value || f.value === 'N/A' || f.value === 'None' ? 'opacity-40' : ''} flex flex-col gap-1 p-3 rounded-xl bg-white/[0.03]`}>
               <span className="text-white/30 text-[10px] font-bold uppercase tracking-widest">{f.label}</span>
               <div className="flex items-center gap-2">
-                {f.icon && <f.icon className="w-3.5 h-3.5 text-[#0077b6] shrink-0" />}
+                {f.icon && <f.icon className="w-3.5 h-3.5 text-[#0DB8D3] shrink-0" />}
                 <span className="text-white text-sm font-medium">{f.value}</span>
               </div>
             </div>
@@ -97,7 +97,7 @@ function VenueModal({ venue, onClose }) {
 function VenueCard({ venue, onClick }) {
   const statusColor = {
     'Approved': 'text-green-400 border-green-400/30 bg-green-400/10',
-    'Active': 'text-[#0090e0] border-[#0090e0]/30 bg-[#0090e0]/10',
+    'Active': 'text-[#1B7FDC] border-[#1B7FDC]/30 bg-[#1B7FDC]/10',
     'In Review': 'text-yellow-400 border-yellow-400/30 bg-yellow-400/10',
     'Completed': 'text-white/40 border-white/10 bg-white/5',
     'Declined': 'text-red-400 border-red-400/30 bg-red-400/10',
@@ -108,7 +108,7 @@ function VenueCard({ venue, onClick }) {
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="liquid-glass p-5 md:p-6 cursor-pointer group hover:border-[#0077b6]/40 transition-all flex flex-col gap-3"
+      className="liquid-glass p-5 md:p-6 cursor-pointer group hover:border-[#0DB8D3]/40 transition-all flex flex-col gap-3"
       onClick={() => onClick(venue)}
     >
       <div className="flex items-start justify-between gap-4">
@@ -118,19 +118,19 @@ function VenueCard({ venue, onClick }) {
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/50 text-[11px] font-medium">
         {venue.location && (
           <span className="flex items-center gap-1.5">
-            <MapPin className="w-3 h-3 text-[#0077b6]" />
+            <MapPin className="w-3 h-3 text-[#0DB8D3]" />
             {venue.location}{venue.city ? `, ${venue.city}` : ''}
           </span>
         )}
         {venue.eventDate && (
           <span className="flex items-center gap-1.5">
-            <Calendar className="w-3 h-3 text-[#0077b6]" />
+            <Calendar className="w-3 h-3 text-[#0DB8D3]" />
             {venue.eventDate}
           </span>
         )}
         {venue.capacity && (
           <span className="flex items-center gap-1.5">
-            <Users className="w-3 h-3 text-[#0077b6]" />
+            <Users className="w-3 h-3 text-[#0DB8D3]" />
             {venue.capacity}
           </span>
         )}
@@ -198,11 +198,11 @@ export default function Venues() {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
-        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
+        <span className="text-white bg-[#0DB8D3] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(13,184,211,0.4)]">
           Venue Partnerships
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Host an Event,<br/><span className="not-italic text-[#0090e0]">Get Filled</span>
+          Host an Event,<br/><span className="not-italic text-[#1B7FDC]">Get Filled</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10">
           Partner with MARKETPEACE and we'll fill your space with 150+ engaged shoppers. You get the foot traffic, we handle the rest.
@@ -220,33 +220,33 @@ export default function Venues() {
         </div>
 
         <div className="lg:col-span-5 liquid-glass p-6 md:p-12 shadow-2xl relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0077b6]/20 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0DB8D3]/20 rounded-full blur-[80px] pointer-events-none"></div>
           <h3 className="text-2xl md:text-3xl font-black mb-4 tracking-tight uppercase italic text-white title">Partner With Us</h3>
           <p className="text-white/50 text-sm mb-8 md:mb-10 font-medium leading-relaxed description">Let's discuss how we can work together.</p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5">
             <div>
               <label htmlFor="venue-name" className="sr-only">Venue Name</label>
-              <input id="venue-name" type="text" placeholder="Venue Name" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0077b6] text-sm" value={formData.venueName} onChange={e => setFormData({...formData, venueName: e.target.value})} />
+              <input id="venue-name" type="text" placeholder="Venue Name" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] text-sm" value={formData.venueName} onChange={e => setFormData({...formData, venueName: e.target.value})} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="venue-contact" className="sr-only">Contact Name</label>
-                <input id="venue-contact" type="text" placeholder="Contact Name" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0077b6] text-sm" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                <input id="venue-contact" type="text" placeholder="Contact Name" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] text-sm" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               </div>
               <div>
                 <label htmlFor="venue-email" className="sr-only">Email</label>
-                <input id="venue-email" type="email" placeholder="Email" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0077b6] text-sm" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                <input id="venue-email" type="email" placeholder="Email" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] text-sm" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
               </div>
             </div>
             <div>
               <label htmlFor="venue-location" className="sr-only">Location</label>
-              <input id="venue-location" type="text" placeholder="Location (City/Address)" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0077b6] text-sm" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+              <input id="venue-location" type="text" placeholder="Location (City/Address)" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] text-sm" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
             </div>
             <div>
               <label htmlFor="venue-notes" className="sr-only">Tell us about your space</label>
-              <textarea id="venue-notes" placeholder="Tell us about your space..." className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0077b6] h-32 text-sm" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} />
+              <textarea id="venue-notes" placeholder="Tell us about your space..." className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] h-32 text-sm" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} />
             </div>
-            <button type="submit" disabled={formStatus.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 hover:-translate-y-1 active:translate-y-0 btn-glow">
+            <button type="submit" disabled={formStatus.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#193546] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 btn-glow">
               {formStatus.submitting ? 'SENDING...' : 'REQUEST PARTNERSHIP'}
             </button>
             {formStatus.success && <p className="text-green-400 text-center mt-4 text-xs">Application sent! We'll be in touch.</p>}

@@ -12,12 +12,12 @@ export default function Terms() {
         transition={{ duration: 0.8 }}
         className="max-w-4xl w-full flex flex-col items-start mb-20 md:mb-32"
       >
-        <Link to="/legal" className="flex items-center gap-2 text-[#0077b6] mb-12 md:mb-16 hover:opacity-80 transition-opacity">
+        <Link to="/legal" className="flex items-center gap-2 text-[#0DB8D3] mb-12 md:mb-16 hover:opacity-80 transition-opacity">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-xs font-bold tracking-widest uppercase">Back to Legal</span>
         </Link>
-        <FileText className="w-12 h-12 text-[#0077b6] mb-6" />
-        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-10 md:mb-12 uppercase italic text-white leading-[0.95] title">Terms & <span className="not-italic text-[#0090e0]">Conditions</span></h1>
+        <FileText className="w-12 h-12 text-[#0DB8D3] mb-6" />
+        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-10 md:mb-12 uppercase italic text-white leading-[0.95] title">Terms & <span className="not-italic text-[#1B7FDC]">Conditions</span></h1>
         
         <div className="liquid-glass p-8 md:p-16 w-full space-y-12 text-white/50 font-medium leading-relaxed text-sm sm:text-base md:text-lg description">
           <section>

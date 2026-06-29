@@ -137,12 +137,12 @@ export default function Admin() {
           className="max-w-md w-full liquid-glass p-8 md:p-12"
         >
           <div className="flex justify-center mb-8">
-            <div className="w-16 h-16 rounded-full bg-[#0077b6]/20 flex items-center justify-center border border-[#0077b6]/50 shadow-[0_0_20px_rgba(0,119,182,0.3)]">
-              <ShieldCheck className="w-8 h-8 text-[#0077b6]" />
+            <div className="w-16 h-16 rounded-full bg-[#0DB8D3]/20 flex items-center justify-center border border-[#0DB8D3]/50 shadow-[0_0_20px_rgba(13,184,211,0.3)]">
+              <ShieldCheck className="w-8 h-8 text-[#0DB8D3]" />
             </div>
           </div>
           <h1 className="text-2xl font-black text-center mb-8 uppercase tracking-tighter italic">
-            Admin <span className="not-italic text-[#0090e0]">Login</span>
+            Admin <span className="not-italic text-[#1B7FDC]">Login</span>
           </h1>
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
@@ -151,7 +151,7 @@ export default function Admin() {
                 type="text" 
                 value={id}
                 onChange={(e) => setId(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#0077b6] transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#0DB8D3] transition-colors"
                 placeholder="ID"
                 required
               />
@@ -162,7 +162,7 @@ export default function Admin() {
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#0077b6] transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#0DB8D3] transition-colors"
                 placeholder="••••••••"
                 required
               />
@@ -171,7 +171,7 @@ export default function Admin() {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-white text-[#061530] font-black rounded-xl tracking-[0.2em] text-xs uppercase hover:bg-white/90 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 bg-white text-[#193546] font-black rounded-xl tracking-[0.2em] text-xs uppercase hover:bg-white/90 transition-all flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enter System'}
             </button>
@@ -187,7 +187,7 @@ export default function Admin() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div>
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none mb-2">
-              System <span className="not-italic text-[#0090e0]">Editor</span>
+              System <span className="not-italic text-[#1B7FDC]">Editor</span>
             </h1>
             <p className="text-white/40 text-xs md:text-sm tracking-[0.1em] font-medium uppercase">MarketPeace Global Node Management</p>
           </div>
@@ -201,7 +201,7 @@ export default function Admin() {
             <button 
               onClick={handleSave}
               disabled={loading}
-              className="px-8 py-3 bg-[#0077b6] text-white rounded-xl hover:bg-[#0077b6]/80 transition-all flex items-center gap-2 text-[10px] uppercase tracking-widest font-black shadow-[0_10px_20px_rgba(0,119,182,0.3)]"
+              className="px-8 py-3 bg-[#0DB8D3] text-white rounded-xl hover:bg-[#0DB8D3]/80 transition-all flex items-center gap-2 text-[10px] uppercase tracking-widest font-black shadow-[0_10px_20px_rgba(13,184,211,0.3)]"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Commit Changes</>}
             </button>
@@ -233,7 +233,7 @@ export default function Admin() {
                         <input 
                           value={city.name}
                           onChange={(e) => updateCity(idx, 'name', e.target.value)}
-                          className="bg-transparent border-b border-transparent focus:border-[#0077b6] text-white text-sm font-bold w-full outline-none py-1"
+                          className="bg-transparent border-b border-transparent focus:border-[#0DB8D3] text-white text-sm font-bold w-full outline-none py-1"
                           placeholder="e.g. London, UK"
                         />
                       </td>
@@ -241,8 +241,8 @@ export default function Admin() {
                         <input 
                           value={city.date}
                           onChange={(e) => updateCity(idx, 'date', e.target.value)}
-                          className="bg-transparent border-b border-transparent focus:border-[#0077b6] text-white/60 text-xs font-medium w-full outline-none py-1"
-                          placeholder="e.g. System 03"
+                          className="bg-transparent border-b border-transparent focus:border-[#0DB8D3] text-white/60 text-xs font-medium w-full outline-none py-1"
+                          placeholder="e.g. Q3 2026"
                         />
                       </td>
                       <td className="p-4">
@@ -251,10 +251,10 @@ export default function Admin() {
                           onChange={(e) => updateCity(idx, 'status', e.target.value)}
                           className="bg-transparent text-white/40 text-[10px] uppercase font-bold outline-none cursor-pointer hover:text-white transition-colors"
                         >
-                          <option value="Active Node">Active Node</option>
-                          <option value="Pending Sync">Pending Sync</option>
+                          <option value="Active">Active</option>
                           <option value="Planned">Planned</option>
-                          <option value="Maintenance">Maintenance</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
                         </select>
                       </td>
                       <td className="p-4 text-right">
@@ -274,7 +274,7 @@ export default function Admin() {
           
           <button 
             onClick={addCity}
-            className="w-full py-6 flex items-center justify-center gap-2 text-white/30 hover:text-[#0077b6] hover:bg-white/5 transition-all group"
+            className="w-full py-6 flex items-center justify-center gap-2 text-white/30 hover:text-[#0DB8D3] hover:bg-white/5 transition-all group"
           >
             <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
             <span className="text-[10px] uppercase tracking-[0.2em] font-black">Register New Node</span>
@@ -285,7 +285,7 @@ export default function Admin() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#0077b6] text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-2xl z-50 border border-white/20"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-[#0DB8D3] text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-2xl z-50 border border-white/20"
           >
             {success}
           </motion.div>

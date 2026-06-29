@@ -1,0 +1,16 @@
+{
+  "name": "bg-generator",
+  "version": "1.0.0",
+  "main": "index.html",
+  "scripts": {
+    "dev": "bun --hot dev.ts",
+    "build": "mkdir -p dist && bun build ./src/main.ts --outfile ./dist/main.js --minify && cp index.html styles.css ./dist/ && mkdir -p ./dist/src && cp -r src/shaders ./dist/src/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}

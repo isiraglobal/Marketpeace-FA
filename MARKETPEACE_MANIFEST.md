@@ -33,8 +33,8 @@ To deploy the platform, the following keys must be configured in your **Hosting 
 ## 📬 Contact & Reachout Details
 These are the official communication channels for the platform.
 
-*   **General Inquiry**: `contact@foreignaffairs.com`
-*   **Vendor Curation**: `vendors@foreignaffairs.com`
+*   **General Inquiry**: `foreignaffairsllc2017@gmail.com`
+*   **Vendor Curation**: `foreignaffairsllc2017@gmail.com`
 *   **Instagram**: `@foreignaffairsmarket`
 *   **Official Website**: `marketpeace.isira.club`
 

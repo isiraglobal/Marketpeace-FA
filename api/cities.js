@@ -2,12 +2,6 @@ import { createRateLimiter } from './_middleware.js';
 
 const rateLimiter = createRateLimiter({ maxRequests: 30, windowMs: 60 * 1000 });
 
-const FALLBACK_NODES = [
-  { name: 'New York, NY', status: 'Active Node', date: 'System 01' },
-  { name: 'Washington, D.C.', status: 'Pending Sync', date: 'System 02' },
-  { name: 'Atlanta, GA', status: 'Planned', date: 'Expansion' },
-];
-
 export default async function handler(req, res) {
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
   if (!rateLimiter.check(ip)) {
@@ -18,7 +12,7 @@ export default async function handler(req, res) {
   const INTERNAL_SECRET = process.env.INTERNAL_WEBHOOK_SECRET;
 
   if (!GOOGLE_SCRIPT_URL) {
-    return res.status(200).json(FALLBACK_NODES);
+    return res.status(200).json([]);
   }
 
   try {
@@ -36,12 +30,12 @@ export default async function handler(req, res) {
     const response = await fetch(url, fetchOptions);
 
     if (!response.ok) {
-      return res.status(200).json(FALLBACK_NODES);
+      return res.status(200).json([]);
     }
 
     const data = await response.json();
     if (!Array.isArray(data)) {
-      return res.status(200).json(FALLBACK_NODES);
+      return res.status(200).json([]);
     }
 
     const sanitized = data
@@ -54,9 +48,9 @@ export default async function handler(req, res) {
       .filter(item => item.name.length > 0)
       .slice(0, 50);
 
-    return res.status(200).json(sanitized.length > 0 ? sanitized : FALLBACK_NODES);
+    return res.status(200).json(sanitized);
   } catch (error) {
     console.error('[api/cities] Error fetching from Apps Script', { message: error.message });
-    return res.status(200).json(FALLBACK_NODES);
+    return res.status(200).json([]);
   }
 }

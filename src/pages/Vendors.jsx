@@ -75,11 +75,11 @@ export default function Vendors() {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
-        <span className="text-white bg-[#0077b6] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(0,119,182,0.4)]">
+        <span className="text-white bg-[#0DB8D3] px-4 py-1.5 rounded-full tracking-[0.3em] text-[12px] md:text-xs font-black uppercase mb-8 md:mb-10 shadow-[0_0_20px_rgba(13,184,211,0.4)]">
           Vendor Applications
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-tight md:leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Grow Your <span className="not-italic text-[#0090e0]">Business Here</span>
+          Grow Your <span className="not-italic text-[#1B7FDC]">Business Here</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10">
           Join MARKETPEACE and get your brand in front of thousands of local shoppers. Our team handles the setup, marketing, and crowd — you just bring your product and passion.
@@ -124,7 +124,7 @@ export default function Vendors() {
               "Secure, cashless payment processing"
             ].map((benefit, i) => (
               <div key={i} className="flex items-start gap-4">
-                <div className="w-1 h-1 bg-[#0077b6] rounded-full shrink-0 mt-2" />
+                <div className="w-1 h-1 bg-[#0DB8D3] rounded-full shrink-0 mt-2" />
                 <p className="text-white/50 text-sm font-medium uppercase leading-relaxed description">{benefit}</p>
               </div>
             ))}
@@ -135,9 +135,9 @@ export default function Vendors() {
         <div className="lg:col-span-7 flex flex-col gap-8 md:gap-10">
           <div className="flex flex-col gap-4 text-center lg:text-left">
             <h2 className="text-2xl md:text-5xl font-black tracking-tight text-white leading-tight italic uppercase">
-              Secure Your Spot: <span className="not-italic text-[#0077b6]">{selectedAmount} Deposit</span>
+              Secure Your Spot: <span className="not-italic text-[#0DB8D3]">{selectedAmount} Deposit</span>
             </h2>
-            <div className="h-1 w-20 bg-[#0077b6] rounded-full mx-auto lg:mx-0"></div>
+            <div className="h-1 w-20 bg-[#0DB8D3] rounded-full mx-auto lg:mx-0"></div>
             <p className="text-white/50 text-base md:text-lg font-medium mt-2">Lock in your place at our next event. Balance is due before the event date.</p>
           </div>
           
@@ -150,7 +150,7 @@ export default function Vendors() {
         </div>
 
         <div className="lg:col-span-5 liquid-glass p-8 md:p-12 relative overflow-hidden group">
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0077b6]/20 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0DB8D3]/20 rounded-full blur-[80px] pointer-events-none"></div>
           <h3 className="text-2xl md:text-3xl text-white font-black mb-4 italic uppercase title">
             Apply to Sell
           </h3>
@@ -183,7 +183,7 @@ export default function Vendors() {
                   key={tier}
                   type="button"
                   onClick={() => setFormData({ ...formData, tier })}
-                  className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${formData.tier === tier ? 'border-[#0077b6] bg-[#0077b6]/10 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:border-[#0077b6] hover:bg-white/10'}`}>
+                  className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${formData.tier === tier ? 'border-[#0DB8D3] bg-[#0DB8D3]/10 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:border-[#0DB8D3] hover:bg-white/10'}`}>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-black uppercase tracking-[0.2em]">{tier}</span>
                     <span className="text-sm font-black">${tier === 'Flagship' ? '500' : '250'}</span>
@@ -202,7 +202,7 @@ export default function Vendors() {
             
             {status.error && <p className="text-red-400 text-xs mt-2">{status.error}</p>}
 
-            <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#061530] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 hover:-translate-y-1 active:translate-y-0 btn-glow">
+            <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#193546] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 btn-glow">
               {status.submitting ? 'INITIALIZING...' : `PAY $${selectedAmount}`}
             </button>
           </form>
@@ -214,14 +214,14 @@ export default function Vendors() {
 
 function TierCard({ title, price, desc, features, highlighted = false }) {
   return (
-    <div className={`flex flex-col p-8 md:p-10 h-full liquid-glass ${highlighted ? 'border-[#0077b6]/40 shadow-[0_0_40px_rgba(0,119,182,0.15)] scale-105 z-10 premium-border' : ''}`}>
-      <span className={`text-[10px] font-bold tracking-[0.3em] uppercase mb-4 amount ${highlighted ? 'text-[#0077b6]' : 'text-white/40'}`}>{price}</span>
+    <div className={`flex flex-col p-8 md:p-10 h-full liquid-glass ${highlighted ? 'border-[#0DB8D3]/40 shadow-[0_0_40px_rgba(13,184,211,0.15)] scale-105 z-10 premium-border' : ''}`}>
+      <span className={`text-[10px] font-bold tracking-[0.3em] uppercase mb-4 amount ${highlighted ? 'text-[#0DB8D3]' : 'text-white/40'}`}>{price}</span>
       <h4 className="text-2xl font-black text-white mb-4 tracking-tight title uppercase italic">{title}</h4>
       <p className="text-white/40 text-sm font-medium leading-relaxed mb-8 h-20 overflow-hidden description">{desc}</p>
       <div className="flex flex-col gap-3 mt-auto">
         {features.map((f, i) => (
           <div key={i} className="flex items-center gap-3 text-[11px] text-white/50 font-medium description">
-            <div className={`w-1 h-1 rounded-full ${highlighted ? 'bg-[#0077b6]' : 'bg-white/20'}`} />
+            <div className={`w-1 h-1 rounded-full ${highlighted ? 'bg-[#0DB8D3]' : 'bg-white/20'}`} />
             {f}
           </div>
         ))}
@@ -232,7 +232,7 @@ function TierCard({ title, price, desc, features, highlighted = false }) {
 
 function VendorFeature({ title, desc, highlighted = false }) {
   return (
-    <div className={`flex flex-col gap-4 p-6 md:p-10 liquid-glass ${highlighted ? 'border-[#0077b6]/30' : ''}`}>
+    <div className={`flex flex-col gap-4 p-6 md:p-10 liquid-glass ${highlighted ? 'border-[#0DB8D3]/30' : ''}`}>
       <div>
         <h4 className="text-white font-black text-base md:text-lg mb-1 md:mb-3 tracking-tight break-words italic uppercase title">{title}</h4>
         <p className="text-white/40 text-sm md:text-sm leading-relaxed font-medium break-words description">{desc}</p>
@@ -246,7 +246,7 @@ function Input({ ...props }) {
     <input 
       {...props} 
       required 
-      className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0077b6] transition-all placeholder:text-white/20 font-light backdrop-blur-md text-sm" 
+      className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 font-light backdrop-blur-md text-sm" 
     />
   );
 }

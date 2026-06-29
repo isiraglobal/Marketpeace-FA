@@ -94,14 +94,6 @@ export default function useLiquidGlass() {
 
           el.style.setProperty('--glass-x', `${state.currentX}%`)
           el.style.setProperty('--glass-y', `${state.currentY}%`)
-
-          // 3D rotation tilt
-          const maxTilt = 8
-          const tiltX = ((state.currentY - 50) / 50) * maxTilt
-          const tiltY = -((state.currentX - 50) / 50) * maxTilt
-          
-          el.style.setProperty('--tilt-x', `${tiltX}deg`)
-          el.style.setProperty('--tilt-y', `${tiltY}deg`)
         } else {
           // Revert to center/defaults if disabled
           state.currentX = 50
@@ -110,8 +102,6 @@ export default function useLiquidGlass() {
           state.vy = 0
           el.style.removeProperty('--glass-x')
           el.style.removeProperty('--glass-y')
-          el.style.removeProperty('--tilt-x')
-          el.style.removeProperty('--tilt-y')
         }
       }
       rafRef.current = requestAnimationFrame(updatePhysics)

@@ -12,12 +12,12 @@ export default function Privacy() {
         transition={{ duration: 0.8 }}
         className="max-w-4xl w-full flex flex-col items-start mb-12 md:mb-20"
       >
-        <Link to="/legal" className="flex items-center gap-2 text-[#0077b6] mb-8 md:mb-10 hover:opacity-80 transition-opacity">
+        <Link to="/legal" className="flex items-center gap-2 text-[#0DB8D3] mb-8 md:mb-10 hover:opacity-80 transition-opacity">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-xs font-bold tracking-widest uppercase">Back to Legal</span>
         </Link>
-        <Shield className="w-12 h-12 text-[#0077b6] mb-6" />
-        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-10 md:mb-12 uppercase italic title">Privacy <span className="not-italic text-[#0090e0]">Policy</span></h1>
+        <Shield className="w-12 h-12 text-[#0DB8D3] mb-6" />
+        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter mb-10 md:mb-12 uppercase italic title">Privacy <span className="not-italic text-[#1B7FDC]">Policy</span></h1>
         
         <div className="liquid-glass p-8 md:p-16 w-full space-y-12 text-white/50 font-medium leading-relaxed text-sm sm:text-base md:text-lg description">
           <section>
@@ -73,7 +73,7 @@ export default function Privacy() {
           <section>
             <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">5. Your Choices</h2>
             <p>
-              You can request to update or remove your professional information from our active marketing campaigns at any time by contacting us at legal@foreignaffairsmarket.com. Please note that information already included in printed materials or historical social media posts may not be removable.
+              You can request to update or remove your professional information from our active marketing campaigns at any time by contacting us at foreignaffairsllc2017@gmail.com. Please note that information already included in printed materials or historical social media posts may not be removable.
             </p>
           </section>
         </div>
