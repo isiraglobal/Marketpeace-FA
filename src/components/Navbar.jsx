@@ -48,7 +48,7 @@ export default function Navbar() {
         >
           {/* Links */}
           <nav
-            className="flex items-center gap-6 text-sm"
+            className="hidden sm:flex items-center gap-6 text-sm"
             style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
           >
             {navLinks.map((link) => {

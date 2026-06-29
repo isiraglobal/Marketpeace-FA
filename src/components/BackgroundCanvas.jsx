@@ -16,7 +16,7 @@ export default function BackgroundCanvas() {
   }, [])
 
   return (
-    <div className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-[#193546]">
+    <div className="fixed inset-0 w-screen h-screen min-h-[100dvh] pointer-events-none z-0 bg-[#193546]">
       {/* Poster image while video loads */}
       <img
         src="/background.jpg"

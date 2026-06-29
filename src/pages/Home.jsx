@@ -67,7 +67,7 @@ export default function Home() {
                 initial={{ opacity: 0, z: -1000, scale: 3, filter: 'blur(30px)' }}
                 animate={{ opacity: 1, z: 0, scale: 1, filter: 'blur(0px)' }}
                 transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1], delay: 0.8 + i * 0.06 }}
-                className="relative w-[11vw] sm:w-[9vw] max-w-[95px] h-[13vw] sm:h-[14vw] max-h-[120px] flex items-center justify-center z-20 will-change-transform m-[-0.3vw] perspective-[1000px]"
+                className="relative w-[8vw] sm:w-[9vw] max-w-[95px] h-[9.5vw] sm:h-[14vw] max-h-[120px] flex items-center justify-center z-20 will-change-transform m-[-0.3vw] perspective-[1000px]"
                 style={{ zIndex: letters.length - i }}
               >
                 <motion.img
