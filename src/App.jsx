@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import LoadingScreen from './components/LoadingScreen';
 import ErrorBoundary from './components/ErrorBoundary';
 import BackgroundCanvas from './components/BackgroundCanvas';
+import LeadPopup from './components/LeadPopup';
 import useLiquidGlass from './hooks/useLiquidGlass';
 
 // Lazy load pages for performance
@@ -117,6 +118,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+          <LeadPopup />
           <Footer />
         </div>
       </div>

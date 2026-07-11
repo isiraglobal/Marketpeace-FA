@@ -1,7 +1,35 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { submitForm } from '../utils/stripeCheckout';
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [msg, setMsg] = useState('');
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    setStatus('submitting');
+    setMsg('');
+    try {
+      await submitForm({
+        type: 'Newsletter',
+        email,
+        name,
+        source: 'Footer',
+      });
+      setStatus('success');
+      setMsg("You're subscribed! Welcome to the peace.");
+      setEmail('');
+      setName('');
+    } catch (err) {
+      setStatus('error');
+      setMsg(err.message || 'Subscription failed. Please try again.');
+    }
+  };
+
   return (
     <footer className="relative w-full flex flex-col items-center z-30 pt-10 md:pt-20 mt-10 md:mt-16 overflow-hidden">
       <div className="max-w-6xl w-full mx-auto px-6 mb-6 md:mb-10 flex flex-col items-center text-center relative z-20">
@@ -23,6 +51,42 @@ export default function Footer() {
             <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-[#0DB8D3] transition-all text-[9px] md:text-xs tracking-[0.2em] font-black uppercase">Twitter</a>
             <a href="mailto:foreignaffairsllc2017@gmail.com" className="text-white/40 hover:text-[#0DB8D3] transition-all text-[9px] md:text-xs tracking-[0.2em] font-black uppercase">Email</a>
           </div>
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            onSubmit={handleSubscribe}
+            className="w-full max-w-md flex flex-col sm:flex-row items-center gap-2 mt-2"
+          >
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name (optional)"
+              className="w-full sm:w-40 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#0DB8D3] focus:ring-1 focus:ring-[#0DB8D3] transition-all"
+            />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              className="w-full flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-[#0DB8D3] focus:ring-1 focus:ring-[#0DB8D3] transition-all"
+            />
+            <button
+              type="submit"
+              disabled={status === 'submitting'}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0DB8D3] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#0bc1dd] hover:shadow-[0_0_20px_rgba(13,184,211,0.4)] transition-all disabled:opacity-60"
+            >
+              {status === 'submitting' ? '…' : 'Subscribe'}
+            </button>
+          </motion.form>
+          {(status === 'success' || status === 'error') && (
+            <p className={`text-[11px] mt-2 tracking-wide ${status === 'success' ? 'text-[#0DB8D3]' : 'text-red-400'}`}>
+              {msg}
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 sm:gap-x-8 md:gap-x-16 gap-y-4 sm:gap-y-6 md:gap-y-8 text-center items-center justify-center">
           <Link to="/vendors" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Vendors</Link>

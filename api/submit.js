@@ -19,7 +19,7 @@ import { createRateLimiter } from './_middleware.js';
 // Rate limiter: max 5 form submissions per IP per 15 minutes
 const rateLimiter = createRateLimiter({ maxRequests: 5, windowMs: 15 * 60 * 1000 });
 
-const ALLOWED_TYPES = ['Vendor', 'Attendee', 'Venue', 'Contact'];
+const ALLOWED_TYPES = ['Vendor', 'Attendee', 'Venue', 'Contact', 'Visitor', 'Newsletter'];
 const ALLOWED_PAYMENT_METHODS = ['venmo', 'zelle', 'cashapp', 'stripe'];
 const ALLOWED_TIERS = ['Standard', 'Flagship'];
 const ALLOWED_TICKET_TYPES = ['Regular', 'Free-Social', 'Free-Friends'];
@@ -162,6 +162,33 @@ function sanitizePayload(data) {
 
     return {
       payload: { type, name, email, subject, message },
+    };
+  }
+
+  if (type === 'Visitor') {
+    const name = str(data.name, 100);
+    const email = str(data.email, 254);
+    const phone = str(data.phone, 20);
+    const source = str(data.source, 50);
+    const page = str(data.page, 200);
+
+    if (name.length < 2) return { error: 'Name is required.' };
+    if (!validEmail(email)) return { error: 'Valid email is required.' };
+
+    return {
+      payload: { type, name, email, phone, source, page },
+    };
+  }
+
+  if (type === 'Newsletter') {
+    const email = str(data.email, 254);
+    const name = str(data.name, 100);
+    const source = str(data.source, 50);
+
+    if (!validEmail(email)) return { error: 'Valid email is required.' };
+
+    return {
+      payload: { type, email, name, source, status: 'Subscribed' },
     };
   }
 

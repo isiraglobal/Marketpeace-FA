@@ -74,6 +74,20 @@ const SHEET_DEFS = [
     color: '#3498db',
     widths: [120, 100, 100, 100, 100, 100, 100, 300, 180],
   },
+  {
+    name: 'Visitors',
+    headers: ['Timestamp', 'Name', 'Email', 'Phone', 'Source', 'Page', 'LastUpdated'],
+    statuses: [],
+    color: '#0DB8D3',
+    widths: [180, 160, 200, 140, 120, 200, 180],
+  },
+  {
+    name: 'Newsletter',
+    headers: ['Timestamp', 'Email', 'Name', 'Source', 'Status', 'LastUpdated'],
+    statuses: ['Subscribed', 'Unsubscribed'],
+    color: '#1B7FDC',
+    widths: [180, 200, 160, 120, 120, 180],
+  },
 ];
 
 /* ═══════════════════════════════════════════
@@ -215,7 +229,7 @@ function doGet(e) {
 
 /* ─── Action: submit ─── */
 function handleSubmit(ss, data) {
-  const map = { VENDOR: 'Vendors', VENUE: 'Venues', ATTENDEE: 'Attendees', CONTACT: 'Contacts' };
+  const map = { VENDOR: 'Vendors', VENUE: 'Venues', ATTENDEE: 'Attendees', CONTACT: 'Contacts', VISITOR: 'Visitors', NEWSLETTER: 'Newsletter' };
   const name = map[(data.type || '').toUpperCase()];
   if (!name) return respond({ error: 'Invalid type' });
 
@@ -416,6 +430,10 @@ function buildRow(type, data, tid) {
       return [ts, 'In Review', s(data.venueName, 150), s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.location, 200), s(data.city, 100), s(data.capacity, 20), s(data.hasParking, 10), s(data.hasWiFi, 10), s(data.indoorOutdoor, 20), s(data.notes, 1000), '', s(data.eventDate, 50), ts];
     case 'CONTACT':
       return [ts, s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.subject, 200), s(data.message, 2000), s(data.source, 50), 'No', '', ts];
+    case 'VISITOR':
+      return [ts, s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.source, 50), s(data.page, 200), ts];
+    case 'NEWSLETTER':
+      return [ts, s(data.email, 254), s(data.name, 100), s(data.source, 50), s(data.status || 'Subscribed', 50), ts];
     default:
       return [ts, tid, 'Unknown'];
   }
