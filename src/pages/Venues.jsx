@@ -209,8 +209,8 @@ export default function Venues() {
         </p>
       </motion.div>
 
-      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 mb-12 md:mb-20 items-start">
-        <div className="lg:col-span-7 flex flex-col gap-6">
+      <div className="max-w-7xl w-full flex flex-col gap-8 lg:gap-16 mb-12 md:mb-20">
+        <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <FeatureItem title="New Foot Traffic" desc="150-300+ intentional patrons discover your space." />
             <FeatureItem title="Professional Content" desc="Free high-fidelity media assets and social amplify." />
@@ -219,7 +219,7 @@ export default function Venues() {
           </div>
         </div>
 
-        <div className="lg:col-span-5 liquid-glass p-6 md:p-12 shadow-2xl relative overflow-hidden">
+        <div className="liquid-glass p-6 md:p-12 shadow-2xl relative overflow-hidden">
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0DB8D3]/20 rounded-full blur-[80px] pointer-events-none"></div>
           <h3 className="text-2xl md:text-3xl font-black mb-4 tracking-tight uppercase italic text-white title">Partner With Us</h3>
           <p className="text-white/50 text-sm mb-8 md:mb-10 font-medium leading-relaxed description">Let's discuss how we can work together.</p>

@@ -40,8 +40,8 @@ export default function Contact() {
         </p>
       </motion.div>
 
-      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-        <div className="lg:col-span-7 flex flex-col gap-8">
+      <div className="max-w-7xl w-full flex flex-col gap-12 lg:gap-20">
+        <div className="flex flex-col gap-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <ContactMethod 
               icon={<Mail />} 
@@ -73,7 +73,7 @@ export default function Contact() {
           </div>
         </div>
 
-        <div className="lg:col-span-5 liquid-glass p-6 md:p-12 shadow-2xl relative overflow-hidden">
+        <div className="liquid-glass p-6 md:p-12 shadow-2xl relative overflow-hidden">
           <h3 className="text-2xl md:text-3xl font-black mb-8 tracking-tight uppercase italic text-white title">Send a Message</h3>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>

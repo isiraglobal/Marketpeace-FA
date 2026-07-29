@@ -131,8 +131,8 @@ export default function Vendors() {
         </div>
       </div>
 
-      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 mb-12 md:mb-20 items-start">
-        <div className="lg:col-span-7 flex flex-col gap-8 md:gap-10">
+      <div className="max-w-7xl w-full flex flex-col gap-8 lg:gap-16 mb-12 md:mb-20">
+        <div className="flex flex-col gap-8 md:gap-10">
           <div className="flex flex-col gap-4 text-center lg:text-left">
             <h2 className="text-2xl md:text-5xl font-black tracking-tight text-white leading-tight italic uppercase">
               Secure Your Spot: <span className="not-italic text-[#0DB8D3]">{selectedAmount} Deposit</span>
@@ -149,7 +149,7 @@ export default function Vendors() {
           </div>
         </div>
 
-        <div className="lg:col-span-5 liquid-glass p-8 md:p-12 relative overflow-hidden group">
+        <div className="liquid-glass p-8 md:p-12 relative overflow-hidden group">
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0DB8D3]/20 rounded-full blur-[80px] pointer-events-none"></div>
           <h3 className="text-2xl md:text-3xl text-white font-black mb-4 italic uppercase title">
             Apply to Sell
