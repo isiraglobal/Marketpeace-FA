@@ -100,12 +100,12 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-8 mb-10 sm:mb-16 w-full max-w-3xl px-4">
             <Link to="/vendors" className="w-full sm:w-auto flex-1">
               <button className="w-full flex items-center justify-center gap-3 bg-white text-[#193546] px-6 py-4 rounded-xl text-[12px] font-black tracking-[0.2em] hover:bg-white/90 transition-all shadow-2xl uppercase btn-glow">
-                Apply as Vendor
+                Join Free as Vendor
               </button>
             </Link>
             <Link to="/attendees" className="w-full sm:w-auto flex-1">
               <button className="w-full flex items-center justify-center gap-3 bg-[#0DB8D3] text-white px-6 py-4 rounded-xl text-[12px] font-black tracking-[0.2em] hover:bg-[#1B7FDC] transition-all shadow-xl uppercase">
-                Register as Attendee
+                Join Free
               </button>
             </Link>
             <Link to="/venues" className="w-full sm:w-auto flex-1">
@@ -118,18 +118,18 @@ export default function Home() {
 
           <div className="flex items-center gap-6 sm:gap-10 md:gap-16 py-8 md:py-12 border-t border-white/5 w-full justify-center">
             <div className="flex flex-col items-center">
-              <span className="text-white font-black text-lg md:text-2xl tracking-tighter italic amount">$250</span>
-              <span className="text-white/30 text-[11px] tracking-[0.2em] uppercase font-bold">Standard</span>
+              <span className="text-white font-black text-lg md:text-2xl tracking-tighter italic amount">Free</span>
+              <span className="text-white/30 text-[11px] tracking-[0.2em] uppercase font-bold">To Join</span>
             </div>
             <div className="w-[1px] h-6 bg-white/10" />
             <div className="flex flex-col items-center">
-              <span className="text-white font-black text-lg md:text-2xl tracking-tighter italic amount">$500</span>
-              <span className="text-white/30 text-[11px] tracking-[0.2em] uppercase font-bold">Flagship</span>
+              <span className="text-white font-black text-lg md:text-2xl tracking-tighter italic amount">100+</span>
+              <span className="text-white/30 text-[11px] tracking-[0.2em] uppercase font-bold">Vendors</span>
             </div>
             <div className="w-[1px] h-6 bg-white/10" />
             <div className="flex flex-col items-center">
-              <span className="text-white font-black text-lg md:text-2xl tracking-tighter italic amount">$5</span>
-              <span className="text-white/30 text-[11px] tracking-[0.2em] uppercase font-bold">Door Entry</span>
+              <span className="text-white font-black text-lg md:text-2xl tracking-tighter italic amount">3</span>
+              <span className="text-white/30 text-[11px] tracking-[0.2em] uppercase font-bold">Cities</span>
             </div>
           </div>
         </div>
@@ -156,27 +156,27 @@ export default function Home() {
       <section className="w-full flex flex-col items-center px-4 py-16 md:py-24">
         <div className="max-w-6xl w-full flex flex-col items-center">
           <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] md:text-[12px] font-black uppercase mb-6 md:mb-10">How it Works</span>
-          <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-8xl font-black text-white mb-8 md:mb-20 tracking-tighter text-center italic uppercase leading-[0.95]">From application to <span className="not-italic text-[#1B7FDC]">profit</span> in 3 steps</h3>
+          <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-8xl font-black text-white mb-8 md:mb-20 tracking-tighter text-center italic uppercase leading-[0.95]">From signup to <span className="not-italic text-[#1B7FDC]">community</span> in 3 steps</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10 w-full">
-            <JourneyStep number="01" title="Apply" desc="Tell us about your brand or venue." />
-            <JourneyStep number="02" title="Selected" desc="Get picked for a matching vibe." />
-            <JourneyStep number="03" title="Promoted" desc="We handle marketing, you handle business." />
+            <JourneyStep number="01" title="Join Free" desc="Create your profile in 30 seconds." />
+            <JourneyStep number="02" title="Connect" desc="Discover vendors, events, and community near you." />
+            <JourneyStep number="03" title="Grow" desc="Level up with premium perks when you're ready." />
           </div>
-          <p className="mt-8 md:mt-16 text-[#0DB8D3] font-black tracking-[0.3em] uppercase text-[11px] md:text-xs animate-pulse">Bonus: Profit & Repeat.</p>
+          <p className="mt-8 md:mt-16 text-[#0DB8D3] font-black tracking-[0.3em] uppercase text-[11px] md:text-xs animate-pulse">100% free to start.</p>
         </div>
       </section>
 
-      {/* VENDOR APPLICATION */}
+      {/* JOIN THE COMMUNITY */}
       <section className="w-full flex flex-col items-center px-4 py-16 md:py-24">
         <div className="max-w-7xl w-full flex flex-col lg:flex-row gap-8 md:gap-20 items-center lg:items-start justify-center">
           <div className="w-full lg:w-[50%]">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] font-black uppercase inline-block mb-4">Vendor Application</span>
-              <span className="text-[#0DB8D3] bg-[#0DB8D3]/10 px-3 py-1 rounded-full tracking-[0.2em] text-[10px] font-black uppercase inline-block border border-[#0DB8D3]/20 animate-pulse">Limited Slots Remaining</span>
+              <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] font-black uppercase inline-block mb-4">Join the Community</span>
+              <span className="text-[#0DB8D3] bg-[#0DB8D3]/10 px-3 py-1 rounded-full tracking-[0.2em] text-[10px] font-black uppercase inline-block border border-[#0DB8D3]/20">Free to Join</span>
             </div>
-            <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 md:mb-8 tracking-tighter uppercase italic leading-[0.95]">Your booth. Your crowd. <span className="not-italic text-[#1B7FDC]">Your commission.</span></h3>
+            <h3 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 md:mb-8 tracking-tighter uppercase italic leading-[0.95]">Your brand. Your crowd. <span className="not-italic text-[#1B7FDC]">Your growth.</span></h3>
             <p className="text-white/60 text-[10px] sm:text-base md:text-lg leading-relaxed font-medium mb-6 md:mb-12 max-w-2xl">
-              Choose the tier that fits your growth strategy. Every vendor gets access to our premium infrastructure. <span className="text-white">Secure your position today.</span>
+              Create your free profile and start connecting with local shoppers and events. <span className="text-white">Upgrade when you're ready.</span>
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-8">
@@ -184,32 +184,32 @@ export default function Home() {
                 <div className="liquid-glass flex flex-col h-full p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] group-hover:border-white/40 transition-all cursor-pointer">
                   <div className="flex flex-col gap-1 mb-6 md:mb-8">
                     <div className="flex justify-between items-center">
-                      <h5 className="font-black text-sm md:text-xl tracking-tight italic uppercase title">Standard</h5>
-                      <span className="text-white font-black italic amount text-lg md:text-2xl">$250</span>
+                      <h5 className="font-black text-sm md:text-xl tracking-tight italic uppercase title">Vendor Profile</h5>
+                      <span className="text-[#0DB8D3] font-black italic amount text-lg md:text-2xl">Free</span>
                     </div>
-                    <span className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Core Infrastructure</span>
+                    <span className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Start Here</span>
                   </div>
                   <ul className="text-white/60 text-[10px] md:text-[12px] font-medium space-y-3 md:space-y-4 mt-auto">
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">8x6 Space + 6ft Table & 2 Chairs</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Standard Floor Placement</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">General Social Mention</span></li>
+                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Profile in vendor network</span></li>
+                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Event notifications</span></li>
+                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Community access</span></li>
                   </ul>
                 </div>
               </Link>
               <Link to="/vendors" className="block group">
                 <div className="liquid-glass !overflow-visible flex flex-col h-full p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border-[#0DB8D3]/40 group-hover:border-[#0DB8D3]/80 transition-all relative cursor-pointer bg-[#0DB8D3]/5 shadow-[0_0_30px_rgba(13,184,211,0.15)] group-hover:shadow-[0_0_40px_rgba(13,184,211,0.3)]">
-                  <div className="absolute -top-3 right-6 bg-[#0DB8D3] text-white text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest btn-glow shadow-lg">Most Popular</div>
+                  <div className="absolute -top-3 right-6 bg-[#0DB8D3] text-white text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest btn-glow shadow-lg">Upgrade Available</div>
                   <div className="flex flex-col gap-1 mb-6 md:mb-8">
                     <div className="flex justify-between items-center">
-                      <h5 className="font-black text-sm md:text-xl tracking-tight italic uppercase title text-[#0DB8D3]">Flagship</h5>
-                      <span className="text-white font-black italic amount text-lg md:text-2xl">$500</span>
+                      <h5 className="font-black text-sm md:text-xl tracking-tight italic uppercase title text-[#0DB8D3]">Get Involved</h5>
+                      <span className="text-white font-black italic amount text-lg md:text-2xl">$5</span>
                     </div>
-                    <span className="text-[#0DB8D3]/70 text-[10px] uppercase font-bold tracking-widest">Maximum Visibility</span>
+                    <span className="text-[#0DB8D3]/70 text-[10px] uppercase font-bold tracking-widest">Premium Perks</span>
                   </div>
                   <ul className="text-white/60 text-[10px] md:text-[12px] font-medium space-y-3 md:space-y-4 mt-auto">
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0 shadow-[0_0_10px_rgba(13,184,211,1)]" /> <span className="leading-tight text-white">Prime Corner Placement</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Featured Brand Promotion</span></li>
-                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Professional Content Pack</span></li>
+                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0 shadow-[0_0_10px_rgba(13,184,211,1)]" /> <span className="leading-tight text-white">Featured profile badge</span></li>
+                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Social media shoutout</span></li>
+                    <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 mt-1.5 bg-[#0DB8D3] rounded-sm shrink-0" /> <span className="leading-tight">Priority event access</span></li>
                   </ul>
                 </div>
               </Link>
@@ -219,15 +219,15 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
                 <div className="flex items-center gap-2">
                   <Zap className="w-3 h-3 text-[#0DB8D3]" />
-                  <span className="text-white/50 text-[11px] uppercase font-black tracking-widest">Marketing Support</span>
+                  <span className="text-white/50 text-[11px] uppercase font-black tracking-widest">Community Access</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-3 h-3 text-[#0DB8D3]" />
-                  <span className="text-white/50 text-[11px] uppercase font-black tracking-widest">Data Ownership</span>
+                  <span className="text-white/50 text-[11px] uppercase font-black tracking-widest">Event Updates</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Camera className="w-3 h-3 text-[#0DB8D3]" />
-                  <span className="text-white/50 text-[11px] uppercase font-black tracking-widest">Pro Photography</span>
+                  <span className="text-white/50 text-[11px] uppercase font-black tracking-widest">Media Content</span>
                 </div>
               </div>
             </div>
@@ -236,11 +236,11 @@ export default function Home() {
           <div className="w-full lg:w-[40%] flex justify-center lg:justify-end">
             <div className="liquid-glass p-6 md:p-12 shadow-2xl transition-all duration-500 relative overflow-hidden group w-full max-w-md border-[#0DB8D3]/20">
               <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#0DB8D3]/10 rounded-full blur-[100px] pointer-events-none"></div>
-              <h4 className="text-xl md:text-3xl text-white font-black mb-2 md:mb-4 tracking-tighter uppercase italic">Secure Your <span className="not-italic text-[#1B7FDC]">Piece</span></h4>
-              <p className="text-white/50 mb-6 md:mb-8 font-medium leading-relaxed text-[11px] md:text-base">Applications reviewed within 48h. Deposit locks your spot in the rollout.</p>
+              <h4 className="text-xl md:text-3xl text-white font-black mb-2 md:mb-4 tracking-tighter uppercase italic">Start Your <span className="not-italic text-[#1B7FDC]">Journey</span></h4>
+              <p className="text-white/50 mb-6 md:mb-8 font-medium leading-relaxed text-[11px] md:text-base">Join for free. Build your profile. Get discovered by local shoppers.</p>
               <Link to="/vendors" className="block w-full">
                 <button className="w-full py-4 md:py-5 bg-white text-[#193546] font-black rounded-xl tracking-[0.2em] text-[11px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-lg active:scale-95 btn-glow">
-                  SECURE YOUR SPOT
+                  CREATE FREE PROFILE
                 </button>
               </Link>
             </div>
@@ -361,12 +361,12 @@ function HomeSections({ cityNodes, venueNodes }) {
           <div className="liquid-glass p-6 md:p-8 shadow-2xl w-full relative overflow-hidden">
             <h3 className="text-xl md:text-2xl font-black mb-6 md:mb-12 text-center uppercase tracking-[0.3em] text-white opacity-80 italic">FAQ</h3>
             <div className="grid grid-cols-1 gap-8 text-left">
-              <FAQItem q="How do I apply as a vendor?" a="Head to our Vendors page and fill out the application form. Our team reviews applications within 48 hours." />
-              <FAQItem q="How much does it cost to vend?" a="Standard booths start at $250 and Flagship booths at $500. Pricing includes table, chairs, and marketing support." />
-              <FAQItem q="Can I attend as a shopper?" a="Yes! Event entry is $5. Sign up on our Attendees page to get notified about upcoming markets." />
+              <FAQItem q="Is it free to join?" a="Yes! Creating a vendor or attendee profile is completely free. Join the community, get event notifications, and build your network at no cost." />
+              <FAQItem q="What does the $5 upgrade include?" a="The optional 'Get Involved' upgrade gives you a featured profile badge, social media shoutout, priority event access, and a Discord community invite. It's totally optional — your free profile works great on its own." />
+              <FAQItem q="What about premium vendor booths?" a="When you're ready to vend at an event, we offer premium booth packages starting at $250. Our AI generates a custom offer tailored to your brand. Check the Vendors page for details." />
+              <FAQItem q="How do I attend events?" a="Sign up for free on our Community page. You'll get notified about events near you and can optionally upgrade to VIP access for $5." />
               <FAQItem q="How do I partner my venue?" a="If you have a space that would work well for a market event, reach out via our Venues page and we'll discuss partnership options." />
               <FAQItem q="What is the referral program?" a="Refer approved vendors or venues and earn cash rewards. Check our referral tiers on this page for details." />
-              <FAQItem q="How long does approval take?" a="Most applications are reviewed within 48 hours. You'll be notified via email once your status is updated." />
             </div>
           </div>
         </div>

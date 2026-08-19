@@ -19,10 +19,10 @@ import { createRateLimiter } from './_middleware.js';
 // Rate limiter: max 5 form submissions per IP per 15 minutes
 const rateLimiter = createRateLimiter({ maxRequests: 5, windowMs: 15 * 60 * 1000 });
 
-const ALLOWED_TYPES = ['Vendor', 'Attendee', 'Venue', 'Contact', 'Visitor', 'Newsletter'];
-const ALLOWED_PAYMENT_METHODS = ['venmo', 'zelle', 'cashapp', 'stripe'];
-const ALLOWED_TIERS = ['Standard', 'Flagship'];
-const ALLOWED_TICKET_TYPES = ['Regular', 'Free-Social', 'Free-Friends'];
+const ALLOWED_TYPES = ['Vendor', 'Attendee', 'Venue', 'Contact', 'Visitor', 'Newsletter', 'CityRequest'];
+const ALLOWED_PAYMENT_METHODS = ['venmo', 'zelle', 'cashapp', 'stripe', 'free', 'none'];
+const ALLOWED_TIERS = ['Free', 'Standard', 'Flagship'];
+const ALLOWED_TICKET_TYPES = ['Free', 'Regular', 'Free-Social', 'Free-Friends'];
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -101,25 +101,36 @@ function sanitizePayload(data) {
     const businessName = str(data.businessName, 150);
     const email = str(data.email, 254);
     const instagram = str(data.instagram, 100);
-    const paymentMethod = str(data.paymentMethod, 20);
-    const tier = str(data.tier, 20);
+    const category = str(data.category, 100);
+    const paymentMethod = str(data.paymentMethod || 'free', 20);
+    const tier = str(data.tier || 'Free', 20);
     const transactionID = str(data.transactionID, 50);
 
     if (name.length < 2) return { error: 'Name is required (min 2 characters).' };
     if (businessName.length < 2) return { error: 'Business name is required.' };
     if (!validEmail(email)) return { error: 'Valid email is required.' };
-    if (!ALLOWED_PAYMENT_METHODS.includes(paymentMethod)) return { error: 'Invalid payment method.' };
-    if (!ALLOWED_TIERS.includes(tier)) return { error: 'Invalid tier selection.' };
+    if (tier && !ALLOWED_TIERS.includes(tier)) return { error: 'Invalid tier selection.' };
 
     return {
-      payload: { type, name, businessName, email, instagram, paymentMethod, tier, transactionID, status: 'Pending' },
+      payload: {
+        type,
+        name,
+        businessName,
+        email,
+        instagram,
+        category: category || 'General',
+        paymentMethod: paymentMethod || 'free',
+        tier: tier || 'Free',
+        transactionID,
+        status: tier === 'Free' ? 'Free Profile' : 'Pending',
+      },
     };
   }
 
   if (type === 'Attendee') {
     const name = str(data.name, 100);
     const email = str(data.email, 254);
-    const ticketType = str(data.ticketType, 30);
+    const ticketType = str(data.ticketType || 'Free', 30);
     const transactionID = str(data.transactionID, 50);
     const referrer = str(data.referrer, 100);
 
@@ -128,7 +139,34 @@ function sanitizePayload(data) {
     if (!ALLOWED_TICKET_TYPES.includes(ticketType)) return { error: 'Invalid ticket type.' };
 
     return {
-      payload: { type, name, email, ticketType, transactionID, referrer, status: 'Pending' },
+      payload: { type, name, email, ticketType, transactionID, referrer, status: 'Registered' },
+    };
+  }
+
+  if (type === 'CityRequest') {
+    const name = str(data.name, 100);
+    const email = str(data.email, 254);
+    const phone = str(data.phone, 30);
+    const city = str(data.city, 100);
+    const state = str(data.state, 100);
+    const country = str(data.country, 100);
+
+    if (name.length < 2) return { error: 'Name is required (min 2 characters).' };
+    if (!validEmail(email)) return { error: 'Valid email is required.' };
+    if (phone.length < 5) return { error: 'Valid phone number is required.' };
+    if (city.length < 2) return { error: 'City is required.' };
+
+    return {
+      payload: {
+        type,
+        name,
+        email,
+        phone,
+        city,
+        state: state || '',
+        country: country || 'United States',
+        status: 'New',
+      },
     };
   }
 

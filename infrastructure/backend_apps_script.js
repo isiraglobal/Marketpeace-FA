@@ -22,15 +22,17 @@ const SHEET_ID = '1U4OAHwkntuIlcgWUbtAFJ2R0hBkyTqSJHtmmzsjEa1g';
 const PROPS = PropertiesService.getScriptProperties();
 const DISCORD_WEBHOOK_URL = PROPS.getProperty('DISCORD_WEBHOOK_URL');
 const INTERNAL_SECRET = PROPS.getProperty('INTERNAL_SECRET');
+const NVIDIA_NIM_API_KEY = PROPS.getProperty('NVIDIA_NIM_API_KEY');
+const STRIPE_SECRET_KEY = PROPS.getProperty('STRIPE_SECRET_KEY');
 
 /* ─── Sheet Definitions ─── */
 const SHEET_DEFS = [
   {
     name: 'Vendors',
-    headers: ['Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email', 'Phone', 'Instagram', 'Website', 'Tier', 'Amount', 'PaymentMethod', 'StripeSessionID', 'ReceiptURL', 'Notes', 'LastUpdated'],
-    statuses: ['Pending', 'Paid', 'Confirmed', 'Cancelled', 'Refunded'],
+    headers: ['Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email', 'Phone', 'Instagram', 'Category', 'ProfileType', 'Website', 'Tier', 'Amount', 'PaymentMethod', 'StripeSessionID', 'ReceiptURL', 'Notes', 'LastUpdated', 'OfferAmount', 'OfferDetails', 'PaymentLinkURL', 'OfferSentAt', 'OfferStatus'],
+    statuses: ['Free Profile', 'Pending', 'Offer Sent', 'Paid', 'Confirmed', 'Cancelled', 'Refunded'],
     color: parseInt('0DB8D3', 16),
-    widths: [180, 140, 100, 160, 200, 200, 140, 160, 200, 100, 80, 120, 200, 200, 300, 180],
+    widths: [180, 140, 120, 160, 200, 200, 140, 160, 160, 120, 200, 100, 80, 120, 200, 200, 300, 180, 100, 300, 200, 180, 100],
   },
   {
     name: 'Attendees',
@@ -87,6 +89,13 @@ const SHEET_DEFS = [
     statuses: ['Subscribed', 'Unsubscribed'],
     color: '#1B7FDC',
     widths: [180, 200, 160, 120, 120, 180],
+  },
+  {
+    name: 'CityRequests',
+    headers: ['Timestamp', 'Name', 'Email', 'Phone', 'City', 'State', 'Country', 'Status', 'Notes', 'LastUpdated'],
+    statuses: ['New', 'Evaluating', 'Planned', 'Archived'],
+    color: '#0DB8D3',
+    widths: [180, 160, 220, 140, 160, 140, 140, 100, 300, 180],
   },
 ];
 
@@ -229,7 +238,15 @@ function doGet(e) {
 
 /* ─── Action: submit ─── */
 function handleSubmit(ss, data) {
-  const map = { VENDOR: 'Vendors', VENUE: 'Venues', ATTENDEE: 'Attendees', CONTACT: 'Contacts', VISITOR: 'Visitors', NEWSLETTER: 'Newsletter' };
+  const map = {
+    VENDOR: 'Vendors',
+    VENUE: 'Venues',
+    ATTENDEE: 'Attendees',
+    CONTACT: 'Contacts',
+    VISITOR: 'Visitors',
+    NEWSLETTER: 'Newsletter',
+    CITYREQUEST: 'CityRequests',
+  };
   const name = map[(data.type || '').toUpperCase()];
   if (!name) return respond({ error: 'Invalid type' });
 
@@ -237,8 +254,76 @@ function handleSubmit(ss, data) {
   const tid = sanitize(data.transactionID || 'TXN-' + Math.random().toString(36).slice(2, 10).toUpperCase(), 50);
   sheet.appendRow(buildRow(data.type.toUpperCase(), data, tid));
 
+  // ─── CITY REQUEST DISCORD ALERT ───
+  // REQUIREMENT: In discord, ONLY send the person name, email/phone, and the requested city
+  if ((data.type || '').toUpperCase() === 'CITYREQUEST') {
+    const locationParts = [data.city, data.state, data.country].filter(Boolean);
+    const locationStr = locationParts.join(', ');
+    const contactParts = [data.email, data.phone].filter(Boolean);
+    const contactStr = contactParts.join(' | ');
+
+    notifyDiscord('🏙️ New City Requested',
+      `**Name:** ${sanitize(data.name, 100)}\n**Contact:** ${sanitize(contactStr, 200)}\n**Requested City:** ${sanitize(locationStr, 200)}`,
+      3447003);
+
+    return respond({ success: true, transactionID: tid });
+  }
+
+  // ─── GENERAL DISCORD ALERT ───
   notifyDiscord('📝 New ' + data.type,
     `**Name:** ${sanitize(data.name, 50)}\n**Email:** ${(data.email || 'N/A').slice(0, 3)}***\n**ID:** ${tid}`, 3447003);
+
+  // ─── VENDOR WORKFLOW ───
+  if ((data.type || '').toUpperCase() === 'VENDOR' && data.email) {
+    const isFree = !data.tier || data.tier.toLowerCase() === 'free';
+
+    if (isFree) {
+      // Free profile intake — send welcome email
+      sendEmail('VENDOR_FREE', {
+        email: data.email,
+        name: data.name || 'Vendor',
+        business: data.businessName || '',
+        category: data.category || 'General',
+        tid: tid,
+      });
+      return respond({ success: true, transactionID: tid });
+    }
+
+    // High-Ticket Booth Application Pipeline (when tier is Standard/Flagship or offer requested)
+    try {
+      const rowIdx = findRowByTID(sheet, tid);
+      const offer = generateCustomOffer(data);
+      const paymentLink = createStripePaymentLink(
+        offer.amount,
+        'MARKETPEACE Vendor Registration — ' + (offer.boothRecommendation || data.tier || 'Standard'),
+        { transactionID: tid, type: 'Vendor', tier: data.tier || 'Standard' }
+      );
+
+      // Update the sheet row with offer details (columns Q-U)
+      if (rowIdx > 0) {
+        const offerCols = sheet.getRange(rowIdx, 19, 1, 5); // Columns S-W
+        offerCols.setValues([[
+          offer.amount,
+          sanitize(offer.proposal, 1000),
+          paymentLink,
+          nowISO(),
+          'Sent',
+        ]]);
+        sheet.getRange(rowIdx, 3).setValue('Offer Sent');
+      }
+
+      sendOfferEmail(data, offer, paymentLink, tid);
+
+      notifyDiscord('🤖 AI Offer Generated',
+        `**Vendor:** ${sanitize(data.businessName || data.name, 50)}\n**Amount:** $${offer.amount}\n**ID:** ${tid.slice(0, 8)}***`,
+        3066993);
+    } catch (offerErr) {
+      console.error('Offer pipeline error:', offerErr.toString());
+      notifyDiscord('⚠️ Offer Pipeline Error',
+        `**Vendor:** ${sanitize(data.name, 50)}\n**Error:** ${sanitize(offerErr.toString(), 200)}`,
+        15158332);
+    }
+  }
 
   return respond({ success: true, transactionID: tid });
 }
@@ -423,9 +508,27 @@ function buildRow(type, data, tid) {
   const ts = nowISO();
   switch (type) {
     case 'VENDOR':
-      return [ts, tid, 'Pending', s(data.name, 100), s(data.businessName, 150), s(data.email, 254), s(data.phone, 20), s(data.instagram, 100), s(data.website, 200), s(data.tier, 20), s(data.amount, 20), s(data.paymentMethod, 20), '', '', '', ts];
+      return [
+        ts,
+        tid,
+        s(data.status || (data.tier === 'Free' ? 'Free Profile' : 'Pending'), 50),
+        s(data.name, 100),
+        s(data.businessName, 150),
+        s(data.email, 254),
+        s(data.phone, 20),
+        s(data.instagram, 100),
+        s(data.category || 'General', 100),
+        s(data.tier === 'Free' ? 'Free' : 'High-Ticket Lead', 50),
+        s(data.website, 200),
+        s(data.tier || 'Free', 20),
+        s(data.amount || '0', 20),
+        s(data.paymentMethod || 'free', 20),
+        '', '', '', ts,
+      ];
     case 'ATTENDEE':
-      return [ts, tid, 'Pending', s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.ticketType, 30), s(data.amount, 20), s(data.referrer, 100), '', '', 'No', '', ts];
+      return [ts, tid, s(data.status || 'Registered', 50), s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.ticketType || 'Free', 30), s(data.amount || '0', 20), s(data.referrer, 100), '', '', 'No', '', ts];
+    case 'CITYREQUEST':
+      return [ts, s(data.name, 100), s(data.email, 254), s(data.phone, 30), s(data.city, 100), s(data.state, 100), s(data.country, 100), 'New', '', ts];
     case 'VENUE':
       return [ts, 'In Review', s(data.venueName, 150), s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.location, 200), s(data.city, 100), s(data.capacity, 20), s(data.hasParking, 10), s(data.hasWiFi, 10), s(data.indoorOutdoor, 20), s(data.notes, 1000), '', s(data.eventDate, 50), ts];
     case 'CONTACT':
@@ -450,6 +553,27 @@ function lastColIdx(name) {
 function sendEmail(type, d) {
   if (!d.email) return;
   const templates = {
+    VENDOR_FREE: {
+      subject: "Welcome to MARKETPEACE! Your Free Vendor Profile is Live",
+      body: [
+        'Hi {NAME},',
+        '',
+        'Welcome to MARKETPEACE! Your vendor profile for {BUSINESS} has been created.',
+        '',
+        '── Profile Info ──',
+        'Business: {BUSINESS}',
+        'Category: {CATEGORY}',
+        'Status: Active Free Profile',
+        '',
+        '── What Next ──',
+        '• You will receive notifications when markets open in your area.',
+        '• When you are ready for a physical booth or VIP placement, request a custom offer anytime.',
+        '',
+        'Questions? foreignaffairsllc2017@gmail.com',
+        '',
+        '— The MARKETPEACE Team',
+      ].join('\n'),
+    },
     VENDOR: {
       subject: "You're In! Your Vendor Spot is Confirmed at MARKETPEACE",
       body: [
@@ -503,6 +627,278 @@ function sendEmail(type, d) {
       name: 'MARKETPEACE',
     });
   } catch (e) { console.error('Email failed:', e.toString()); }
+}
+
+/* ═══════════════════════════════════════════
+   AI OFFER GENERATION — NVIDIA NIM
+   ═══════════════════════════════════════════ */
+
+/**
+ * Calls NVIDIA NIM API (OpenAI-compatible) to generate a custom vendor offer.
+ * Returns { amount, proposal, perks, boothRecommendation }
+ */
+function generateCustomOffer(data) {
+  if (!NVIDIA_NIM_API_KEY) {
+    console.warn('NVIDIA_NIM_API_KEY not set — using fallback pricing');
+    return fallbackOffer(data);
+  }
+
+  const tierBase = { Standard: 250, Flagship: 500 };
+  const preferredTier = data.tier || 'Standard';
+  const baseAmount = tierBase[preferredTier] || 250;
+
+  const systemPrompt = [
+    'You are a MARKETPEACE vendor offer specialist.',
+    'MARKETPEACE is a vendor-event marketplace connecting small businesses, venues, and communities.',
+    'Standard tier: $250 (6ft table, standard placement). Flagship tier: $500 (premium corner, featured promotion).',
+    'Based on the vendor application below, generate a personalized offer.',
+    'You may adjust pricing within ±20% of the base tier price to reward strong applications or add value.',
+    'Return ONLY valid JSON with these keys:',
+    '  amount (number): final offer price in USD (integer, no cents)',
+    '  proposal (string): 2-3 sentence personalized offer message addressing the vendor by name',
+    '  perks (array of strings): 3-5 perks included in this offer',
+    '  boothRecommendation (string): either "Standard" or "Flagship"',
+  ].join('\n');
+
+  const userPrompt = [
+    'Vendor Application:',
+    '  Name: ' + sanitize(data.name, 100),
+    '  Business: ' + sanitize(data.businessName, 150),
+    '  Instagram: ' + sanitize(data.instagram, 100),
+    '  Preferred Tier: ' + preferredTier,
+    '  Base Price: $' + baseAmount,
+  ].join('\n');
+
+  try {
+    const response = UrlFetchApp.fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'Authorization': 'Bearer ' + NVIDIA_NIM_API_KEY },
+      payload: JSON.stringify({
+        model: 'meta/llama-3.3-70b-instruct',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 512,
+        response_format: { type: 'json_object' },
+      }),
+      muteHttpExceptions: true,
+    });
+
+    const status = response.getResponseCode();
+    if (status !== 200) {
+      console.error('NIM API error: HTTP ' + status + ' — ' + response.getContentText().slice(0, 200));
+      return fallbackOffer(data);
+    }
+
+    const result = JSON.parse(response.getContentText());
+    const content = result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content;
+    if (!content) return fallbackOffer(data);
+
+    const offer = JSON.parse(content);
+
+    // Validate and clamp the amount
+    const amount = Math.round(Number(offer.amount) || baseAmount);
+    const minAmount = Math.round(baseAmount * 0.8);
+    const maxAmount = Math.round(baseAmount * 1.2);
+    const clampedAmount = Math.max(minAmount, Math.min(maxAmount, amount));
+
+    return {
+      amount: clampedAmount,
+      proposal: sanitize(offer.proposal || ('Welcome to MARKETPEACE, ' + sanitize(data.name, 50) + '!'), 1000),
+      perks: Array.isArray(offer.perks) ? offer.perks.map(p => sanitize(String(p), 200)).slice(0, 6) : defaultPerks(preferredTier),
+      boothRecommendation: (offer.boothRecommendation === 'Flagship' || offer.boothRecommendation === 'Standard') ? offer.boothRecommendation : preferredTier,
+    };
+  } catch (err) {
+    console.error('NIM API call failed:', err.toString());
+    return fallbackOffer(data);
+  }
+}
+
+function fallbackOffer(data) {
+  const tier = data.tier || 'Standard';
+  const amount = tier === 'Flagship' ? 500 : 250;
+  return {
+    amount: amount,
+    proposal: 'Welcome to MARKETPEACE, ' + sanitize(data.name, 50) + '! Your ' + tier + ' vendor booth is ready — secure your spot today.',
+    perks: defaultPerks(tier),
+    boothRecommendation: tier,
+  };
+}
+
+function defaultPerks(tier) {
+  const base = ['Event listing inclusion', 'Social media mention', 'Post-event photo content', 'Vendor directory listing'];
+  if (tier === 'Flagship') {
+    return ['Premium corner placement', 'Featured on all promotions', 'Social media shoutout', 'VIP platform listing', 'Priority email blasts'];
+  }
+  return base;
+}
+
+/* ═══════════════════════════════════════════
+   STRIPE PAYMENT LINK CREATION
+   ═══════════════════════════════════════════ */
+
+/**
+ * Creates a Stripe Payment Link with a custom amount.
+ * Uses Stripe API directly via UrlFetchApp.
+ * Returns the payment link URL string.
+ */
+function createStripePaymentLink(amount, description, metadata) {
+  if (!STRIPE_SECRET_KEY) {
+    console.error('STRIPE_SECRET_KEY not set — cannot create payment link');
+    return '';
+  }
+
+  const amountCents = Math.round(amount * 100);
+  const stripeAuth = { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY };
+
+  try {
+    // Step 1: Create a one-time Price
+    const priceResponse = UrlFetchApp.fetch('https://api.stripe.com/v1/prices', {
+      method: 'post',
+      headers: stripeAuth,
+      payload: {
+        'unit_amount': String(amountCents),
+        'currency': 'usd',
+        'product_data[name]': sanitize(description, 200),
+      },
+      muteHttpExceptions: true,
+    });
+
+    if (priceResponse.getResponseCode() !== 200) {
+      console.error('Stripe Price creation failed: ' + priceResponse.getContentText().slice(0, 300));
+      return '';
+    }
+
+    const price = JSON.parse(priceResponse.getContentText());
+
+    // Step 2: Create a Payment Link for that Price
+    const linkPayload = {
+      'line_items[0][price]': price.id,
+      'line_items[0][quantity]': '1',
+    };
+    // Add metadata
+    if (metadata) {
+      Object.keys(metadata).forEach(function(key) {
+        linkPayload['metadata[' + key + ']'] = sanitize(String(metadata[key]), 100);
+      });
+    }
+
+    const linkResponse = UrlFetchApp.fetch('https://api.stripe.com/v1/payment_links', {
+      method: 'post',
+      headers: stripeAuth,
+      payload: linkPayload,
+      muteHttpExceptions: true,
+    });
+
+    if (linkResponse.getResponseCode() !== 200) {
+      console.error('Stripe Payment Link creation failed: ' + linkResponse.getContentText().slice(0, 300));
+      return '';
+    }
+
+    const link = JSON.parse(linkResponse.getContentText());
+    return link.url || '';
+  } catch (err) {
+    console.error('Stripe API error:', err.toString());
+    return '';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   OFFER EMAIL — HTML template
+   ═══════════════════════════════════════════ */
+
+/**
+ * Sends a branded HTML email with the AI-generated offer and Stripe Payment Link.
+ */
+function sendOfferEmail(data, offer, paymentLink, tid) {
+  if (!data.email) return;
+
+  const perksHtml = (offer.perks || []).map(function(p) {
+    return '<li style="padding:4px 0;color:#d1d5db;font-size:14px;">✓ ' + sanitize(p, 200) + '</li>';
+  }).join('');
+
+  const htmlBody = [
+    '<!DOCTYPE html>',
+    '<html><head><meta charset="utf-8"></head>',
+    '<body style="margin:0;padding:0;background-color:#0f1b24;font-family:Arial,Helvetica,sans-serif;">',
+    '<div style="max-width:600px;margin:0 auto;padding:40px 20px;">',
+    '',
+    '  <!-- Header -->',
+    '  <div style="text-align:center;margin-bottom:32px;">',
+    '    <h1 style="color:#0DB8D3;font-size:28px;letter-spacing:8px;margin:0;">MARKETPEACE</h1>',
+    '    <p style="color:#6b7280;font-size:11px;letter-spacing:3px;margin-top:8px;">THE INFRASTRUCTURE OF INDEPENDENCE</p>',
+    '  </div>',
+    '',
+    '  <!-- Offer Card -->',
+    '  <div style="background:#193546;border:1px solid rgba(13,184,211,0.2);border-radius:16px;padding:32px;margin-bottom:24px;">',
+    '    <p style="color:#0DB8D3;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px 0;">Your Custom Offer</p>',
+    '    <h2 style="color:#ffffff;font-size:24px;margin:0 0 16px 0;">Hey ' + sanitize(data.name, 50) + ',</h2>',
+    '    <p style="color:#d1d5db;font-size:15px;line-height:1.6;margin:0 0 24px 0;">' + sanitize(offer.proposal, 1000) + '</p>',
+    '',
+    '    <!-- Price -->',
+    '    <div style="background:rgba(13,184,211,0.1);border:1px solid rgba(13,184,211,0.2);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">',
+    '      <p style="color:#0DB8D3;font-size:11px;letter-spacing:3px;margin:0 0 4px 0;">YOUR PRICE</p>',
+    '      <p style="color:#ffffff;font-size:36px;font-weight:bold;margin:0;">$' + offer.amount + '</p>',
+    '      <p style="color:#6b7280;font-size:12px;margin:4px 0 0 0;">' + sanitize(offer.boothRecommendation, 20) + ' Booth</p>',
+    '    </div>',
+    '',
+    '    <!-- Perks -->',
+    '    <p style="color:#ffffff;font-size:14px;font-weight:bold;margin:0 0 12px 0;letter-spacing:1px;">WHAT\'S INCLUDED:</p>',
+    '    <ul style="list-style:none;padding:0;margin:0 0 24px 0;">' + perksHtml + '</ul>',
+    '',
+    '    <!-- CTA Button -->',
+    paymentLink ? [
+      '    <div style="text-align:center;">',
+      '      <a href="' + paymentLink + '" style="display:inline-block;background:#0DB8D3;color:#0f1b24;text-decoration:none;font-weight:bold;font-size:14px;letter-spacing:2px;padding:16px 40px;border-radius:12px;">SECURE YOUR SPOT →</a>',
+      '    </div>',
+    ].join('\n') : '<p style="color:#fbbf24;font-size:13px;">Payment link is being generated. You\'ll receive a follow-up email shortly.</p>',
+    '  </div>',
+    '',
+    '  <!-- Footer -->',
+    '  <div style="text-align:center;padding:20px 0;">',
+    '    <p style="color:#6b7280;font-size:11px;margin:0 0 4px 0;">Transaction ID: ' + sanitize(tid, 50) + '</p>',
+    '    <p style="color:#6b7280;font-size:11px;margin:0 0 4px 0;">Questions? Reply to this email or contact foreignaffairsllc2017@gmail.com</p>',
+    '    <p style="color:#4b5563;font-size:10px;margin:12px 0 0 0;">© 2026 MARKETPEACE. All rights reserved.</p>',
+    '  </div>',
+    '',
+    '</div>',
+    '</body></html>',
+  ].join('\n');
+
+  const plainText = [
+    'MARKETPEACE — Your Custom Vendor Offer',
+    '',
+    'Hey ' + sanitize(data.name, 50) + ',',
+    '',
+    offer.proposal,
+    '',
+    'Your Price: $' + offer.amount + ' (' + offer.boothRecommendation + ' Booth)',
+    '',
+    'What\'s included:',
+    (offer.perks || []).map(function(p) { return '  ✓ ' + p; }).join('\n'),
+    '',
+    paymentLink ? 'Secure your spot: ' + paymentLink : 'Payment link will be sent shortly.',
+    '',
+    'Transaction ID: ' + tid,
+    'Questions? foreignaffairsllc2017@gmail.com',
+    '',
+    '— The MARKETPEACE Team',
+  ].join('\n');
+
+  try {
+    MailApp.sendEmail({
+      to: data.email,
+      subject: sanitize(data.name, 50) + ', your custom MARKETPEACE offer is ready — $' + offer.amount,
+      body: plainText,
+      htmlBody: htmlBody,
+      name: 'MARKETPEACE',
+    });
+  } catch (e) {
+    console.error('Offer email failed:', e.toString());
+  }
 }
 
 /* ═══════════════════════════════════════════

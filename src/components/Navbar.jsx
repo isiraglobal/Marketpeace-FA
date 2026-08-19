@@ -84,7 +84,7 @@ export default function Navbar() {
                 boxShadow: "0 2px 12px rgba(13, 184, 211, 0.25)",
               }}
             >
-              Join Now
+              Join Free
             </button>
           </Link>
 
@@ -149,7 +149,7 @@ export default function Navbar() {
                       boxShadow: "0 2px 12px rgba(13, 184, 211, 0.25)",
                     }}
                   >
-                    Join Now
+                    Join Free
                   </button>
                 </Link>
               </motion.div>

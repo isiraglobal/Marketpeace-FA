@@ -16,18 +16,23 @@ import { createRateLimiter } from './_middleware.js';
 // SECURITY: Price table lives ONLY on the server. Client input is ignored.
 const PRICE_TABLE = {
   Vendor: {
-    Standard: 250,
-    Flagship: 500,
+    Standard: 25000, // $250 — not used for instant checkout, kept for reference
+    Flagship: 50000, // $500
   },
   Attendee: {
-    Regular: 5,
+    Regular: 500,         // $5
     'Free-Social': 0,
     'Free-Friends': 0,
   },
+  Upsell: {
+    GetInvolved: 500,     // $5 — "Get Involved" upgrade
+  },
 };
 
-// SECURITY: Whitelist of allowed registration types
-const ALLOWED_TYPES = ['Vendor', 'Attendee'];
+// SECURITY: Whitelist of allowed registration types for INSTANT checkout.
+// Vendor applications now go through the AI offer pipeline in Apps Script,
+// which generates a custom Stripe Payment Link and emails it directly.
+const ALLOWED_TYPES = ['Attendee', 'Upsell'];
 
 // Rate limiter: max 10 checkout attempts per IP per hour
 const rateLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60 * 60 * 1000 });
@@ -88,9 +93,11 @@ export default async function handler(req, res) {
       });
     }
 
-    const productName = type === 'Vendor'
-      ? `MarketPeace Vendor Registration — ${resolvedTier}`
-      : `MarketPeace ${type} Ticket — ${resolvedTier}`;
+    const productName = type === 'Upsell'
+      ? `MarketPeace Get Involved Upgrade`
+      : type === 'Vendor'
+        ? `MarketPeace Vendor Registration — ${resolvedTier}`
+        : `MarketPeace ${type} Ticket — ${resolvedTier}`;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

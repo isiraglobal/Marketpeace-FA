@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Sparkles, ArrowRight, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 // SECURITY: submitForm routes through /api/submit (server-side proxy).
-// fetchCheckoutSession does NOT send amount — server determines price.
-import { fetchCheckoutSession, submitForm } from '../utils/stripeCheckout';
+// Free profile creation — no payment required.
+// Upsell ("Get Involved") and high-ticket booth offers are separate flows.
+import { submitForm, fetchCheckoutSession } from '../utils/stripeCheckout';
 
 export default function Vendors() {
   const [formData, setFormData] = useState({
@@ -12,58 +13,56 @@ export default function Vendors() {
     businessName: '',
     email: '',
     instagram: '',
-    tier: 'Standard'
+    category: '',
   });
 
   const [status, setStatus] = useState({ submitting: false, success: false, error: null });
-
-  const tierAmounts = {
-    Standard: 250,
-    Flagship: 500,
-  };
-
-  const selectedAmount = tierAmounts[formData.tier] || 250;
+  const [upsellLoading, setUpsellLoading] = useState(false);
 
   useEffect(() => {
-    document.title = "MARKETPEACE | Vendor Sync";
+    document.title = "MARKETPEACE | Join as a Vendor";
   }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // FREE profile creation — no payment
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ submitting: true, success: false, error: null });
 
     try {
-      // SECURITY: Submit form data through server-side proxy (no Google Script URL in browser).
-      // Server validates all fields and writes to Google Sheets.
       await submitForm({
         type: 'Vendor',
         name: formData.name,
         businessName: formData.businessName,
         email: formData.email,
         instagram: formData.instagram,
-        tier: formData.tier,
-        // SECURITY: No transactionID or amount sent from client.
-        // Server generates ID and determines canonical price from tier.
+        category: formData.category,
+        tier: 'Free', // Free profile — no AI offer pipeline triggered
       });
 
-      // SECURITY: fetchCheckoutSession does NOT send amount.
-      // Server looks up price from (type, tier) server-side.
+      setStatus({ submitting: false, success: true, error: null });
+    } catch (err) {
+      setStatus({ submitting: false, success: false, error: err.message || 'Failed to submit. Please try again.' });
+    }
+  };
+
+  // UPSELL: $5 "Get Involved" upgrade via Stripe
+  const handleUpsell = async () => {
+    setUpsellLoading(true);
+    try {
       const { url } = await fetchCheckoutSession({
-        type: 'Vendor',
+        type: 'Upsell',
         name: formData.name,
         email: formData.email,
-        tier: formData.tier,
+        tier: 'GetInvolved',
       });
-
-      // Redirect to Stripe — success/cancel URLs are set server-side
       window.location.href = url;
     } catch (err) {
-      // SECURITY: Only display the user-safe error message — not raw internals
-      setStatus({ submitting: false, success: false, error: err.message || 'Failed to process. Please try again.' });
+      setStatus({ ...status, error: err.message || 'Could not start checkout.' });
+      setUpsellLoading(false);
     }
   };
 
@@ -76,52 +75,33 @@ export default function Vendors() {
         className="max-w-5xl w-full flex flex-col items-center text-center mb-12 md:mb-20"
       >
         <span className="text-[#0DB8D3] tracking-[0.4em] text-[12px] md:text-xs font-black uppercase mb-4 md:mb-6">
-          Vendor Applications
+          Join Free
         </span>
         <h1 className="text-2xl sm:text-4xl md:text-7xl font-black tracking-tighter mb-8 md:mb-10 text-white leading-tight md:leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] uppercase italic">
-          Grow Your <span className="not-italic text-[#1B7FDC]">Business Here</span>
+          Create Your <span className="not-italic text-[#1B7FDC]">Vendor Profile</span>
         </h1>
         <p className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-3xl font-medium px-4 drop-shadow-md mb-6 md:mb-10">
-          Join MARKETPEACE and get your brand in front of thousands of local shoppers. Our team handles the setup, marketing, and crowd — you just bring your product and passion.
+          Join MARKETPEACE for free. Build your vendor profile, get discovered by local shoppers, and grow your brand within our community — no upfront cost.
         </p>
       </motion.div>
 
-      {/* Booth Options */}
-      <div className="max-w-6xl w-full flex flex-col items-center mb-12 md:mb-20">
-        <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white mb-8 md:mb-12 text-center uppercase italic">Choose Your Booth</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-          <TierCard 
-            title="Standard Node" 
-            price="$250 ENTRY" 
-            desc="6ft table & 2 chairs. Prime placement. Core revenue stream."
-            features={["6ft Table & 2 Chairs", "Prime Placement", "Event Listing Inclusion", "Social Media Mention"]}
-          />
-          <TierCard 
-            title="Flagship Node" 
-            price="$500 ENTRY" 
-            desc="Maximum authority. Premium corner positions. Featured on all promotions."
-            features={["Premium Corner Placement", "Featured on Promotions", "Social Media Shoutout", "VIP Platform Listing"]}
-            highlighted
-          />
-        </div>
-      </div>
-
+      {/* What You Get (Free) */}
       <div className="max-w-6xl w-full flex flex-col items-center mb-12 md:mb-20 liquid-glass p-8 md:p-16">
-        <h3 className="text-xl md:text-3xl font-black text-white mb-8 uppercase italic text-center">Everything You Get</h3>
+        <div className="flex items-center gap-3 mb-8">
+          <span className="text-[#0DB8D3] bg-[#0DB8D3]/10 px-4 py-1.5 rounded-full tracking-[0.2em] text-[10px] font-black uppercase border border-[#0DB8D3]/20">100% Free</span>
+        </div>
+        <h3 className="text-xl md:text-3xl font-black text-white mb-8 uppercase italic text-center">What You Get</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
             {[
-              "Premium foot traffic at curated events",
-              "Digital listing on Marketpeace + materials",
-              "Social media features (IG, TikTok)",
-              "Promoter system selling tickets for you",
-              "Post-event photo/video content",
-              "Early access to future registration",
-              "Vendor directory listing on platform",
-              "Inclusion in event email blasts",
-              "Analytics dashboard with traffic data",
-              "Discounted rate for recurring vendors",
-              "QR code signage with your links",
-              "Secure, cashless payment processing"
+              "Vendor profile in the MARKETPEACE network",
+              "Event notifications for your city",
+              "Access to the vendor community",
+              "Visibility to local shoppers & attendees",
+              "Post-event photo/video content access",
+              "Inclusion in vendor directory",
+              "Analytics on profile views",
+              "Early access to future event registration",
+              "Email updates on new opportunities",
             ].map((benefit, i) => (
               <div key={i} className="flex items-start gap-4">
                 <div className="w-1 h-1 bg-[#0DB8D3] rounded-full shrink-0 mt-2" />
@@ -131,82 +111,174 @@ export default function Vendors() {
         </div>
       </div>
 
+      {/* FORM — Free Profile Creation */}
       <div className="max-w-7xl w-full flex flex-col gap-8 lg:gap-16 mb-12 md:mb-20">
-        <div className="flex flex-col gap-8 md:gap-10">
-          <div className="flex flex-col gap-4 text-center lg:text-left">
-            <h2 className="text-2xl md:text-5xl font-black tracking-tight text-white leading-tight italic uppercase">
-              Secure Your Spot: <span className="not-italic text-[#0DB8D3]">{selectedAmount} Deposit</span>
-            </h2>
-            <div className="h-1 w-20 bg-[#0DB8D3] rounded-full mx-auto lg:mx-0"></div>
-            <p className="text-white/50 text-base md:text-lg font-medium mt-2">Lock in your place at our next event. Balance is due before the event date.</p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mt-4">
-            <VendorFeature title="Foot Traffic" desc="Direct access to a curated, high-intent local audience." />
-            <VendorFeature title="Network Effects" desc="Join a growing community of top-tier creators and brands." />
-            <VendorFeature title="Professional Media" desc="High-quality photos and video content for your brand." />
-            <VendorFeature title="VIP Access" desc="Guest tickets and cross-promotional opportunities." />
-          </div>
-        </div>
-
         <div className="liquid-glass p-8 md:p-12 relative overflow-hidden group">
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#0DB8D3]/20 rounded-full blur-[80px] pointer-events-none"></div>
-          <h3 className="text-2xl md:text-3xl text-white font-black mb-4 italic uppercase title">
-            Apply to Sell
+          <h3 className="text-2xl md:text-3xl text-white font-black mb-2 italic uppercase title">
+            {status.success ? 'Welcome to the Community' : 'Create Your Free Profile'}
           </h3>
           <p className="text-white/70 text-lg font-medium leading-relaxed mb-6 description">
-            Ready to grow your business? Fill out the form below and our team will review your application within 48 hours.
+            {status.success 
+              ? 'You\'re in! Your vendor profile has been created.'
+              : 'Takes 30 seconds. No payment required. Start building your presence today.'}
           </p>
           
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="vendor-name" className="sr-only">Full Name</label>
-                <Input id="vendor-name" name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" />
+          {status.success ? (
+            /* ── SUCCESS STATE + UPSELL ── */
+            <div className="space-y-6">
+              {/* Confirmation */}
+              <div className="p-6 rounded-2xl bg-green-500/10 border border-green-500/20 text-center">
+                <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                <h4 className="text-white font-black text-xl mb-2 uppercase tracking-wide">Profile Created</h4>
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Welcome, <span className="text-[#0DB8D3] font-bold">{formData.name}</span>! A confirmation has been sent to <span className="text-[#0DB8D3] font-bold">{formData.email}</span>.
+                </p>
+              </div>
+
+              {/* UPSELL CARD — "Get Involved" */}
+              <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#0DB8D3]/10 to-[#1B7FDC]/10 border border-[#0DB8D3]/30 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#0DB8D3]/10 rounded-full blur-[60px] pointer-events-none"></div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-5 h-5 text-[#0DB8D3]" />
+                  <span className="text-[#0DB8D3] text-[10px] font-black tracking-[0.3em] uppercase">Optional Upgrade</span>
+                </div>
+                <h4 className="text-white font-black text-2xl mb-2 uppercase italic tracking-tight">Get Directly Involved</h4>
+                <p className="text-white/60 text-sm leading-relaxed mb-4">
+                  Want to stand out from day one? For just $5, unlock premium perks that give your profile a boost.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+                  {[
+                    'Priority event notifications',
+                    'Featured profile badge',
+                    'Social media shoutout',
+                    'Early access to new events',
+                    'Community Discord invite',
+                  ].map((perk, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[11px] text-white/50 font-medium">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#0DB8D3] shrink-0" />
+                      {perk}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button 
+                    onClick={handleUpsell} 
+                    disabled={upsellLoading}
+                    className="flex-1 py-4 bg-[#0DB8D3] text-white font-black rounded-xl tracking-[0.15em] text-[12px] uppercase hover:bg-[#0bc1dd] transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 btn-glow"
+                  >
+                    {upsellLoading ? 'PROCESSING...' : 'GET INVOLVED — $5'}
+                    {!upsellLoading && <ArrowRight className="w-4 h-4" />}
+                  </button>
+                  <Link to="/" className="flex-1">
+                    <button className="w-full py-4 bg-white/5 border border-white/10 text-white/60 font-bold rounded-xl tracking-[0.1em] text-[12px] uppercase hover:bg-white/10 transition-all">
+                      Maybe Later
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ── FORM ── */
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="vendor-name" className="sr-only">Full Name</label>
+                  <Input id="vendor-name" name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" />
+                </div>
+                <div>
+                  <label htmlFor="vendor-business" className="sr-only">Brand Name</label>
+                  <Input id="vendor-business" name="businessName" value={formData.businessName} onChange={handleChange} placeholder="Brand Name" />
+                </div>
               </div>
               <div>
-                <label htmlFor="vendor-business" className="sr-only">Brand Name</label>
-                <Input id="vendor-business" name="businessName" value={formData.businessName} onChange={handleChange} placeholder="Brand Name" />
+                <label htmlFor="vendor-email" className="sr-only">Email</label>
+                <Input id="vendor-email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email Address" />
               </div>
-            </div>
-            <div>
-              <label htmlFor="vendor-email" className="sr-only">Email</label>
-              <Input id="vendor-email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Communication Channel (Email)" />
-            </div>
-            <div>
-              <label htmlFor="vendor-instagram" className="sr-only">Instagram</label>
-              <Input id="vendor-instagram" name="instagram" value={formData.instagram} onChange={handleChange} placeholder="Digital Presence (Instagram)" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {['Standard', 'Flagship'].map((tier) => (
-                <button
-                  key={tier}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, tier })}
-                  className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${formData.tier === tier ? 'border-[#0DB8D3] bg-[#0DB8D3]/10 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:border-[#0DB8D3] hover:bg-white/10'}`}>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-black uppercase tracking-[0.2em]">{tier}</span>
-                    <span className="text-sm font-black">${tier === 'Flagship' ? '500' : '250'}</span>
-                  </div>
-                  <p className="text-[10px] mt-2 text-white/50">{tier === 'Flagship' ? 'Premium corner positions, featured promotion.' : 'Standard placement, strong visibility.'}</p>
-                </button>
-              ))}
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="vendor-instagram" className="sr-only">Instagram</label>
+                  <Input id="vendor-instagram" name="instagram" value={formData.instagram} onChange={handleChange} placeholder="Instagram Handle" />
+                </div>
+                <div>
+                  <label htmlFor="vendor-category" className="sr-only">Category</label>
+                  <select 
+                    id="vendor-category"
+                    name="category" 
+                    value={formData.category} 
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white/70 outline-none focus:border-[#0DB8D3] transition-all appearance-none text-sm backdrop-blur-md"
+                  >
+                    <option value="" disabled className="bg-[#193546]">Select Category</option>
+                    <option value="Food & Beverage" className="bg-[#193546]">Food & Beverage</option>
+                    <option value="Fashion & Apparel" className="bg-[#193546]">Fashion & Apparel</option>
+                    <option value="Art & Crafts" className="bg-[#193546]">Art & Crafts</option>
+                    <option value="Health & Wellness" className="bg-[#193546]">Health & Wellness</option>
+                    <option value="Home & Lifestyle" className="bg-[#193546]">Home & Lifestyle</option>
+                    <option value="Tech & Accessories" className="bg-[#193546]">Tech & Accessories</option>
+                    <option value="Services" className="bg-[#193546]">Services</option>
+                    <option value="Other" className="bg-[#193546]">Other</option>
+                  </select>
+                </div>
+              </div>
 
-            <div className="flex items-start gap-4 mt-2">
-              <input type="checkbox" required id="terms" className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5" />
-              <label htmlFor="terms" className="text-[10px] md:text-[11px] text-white/40 leading-relaxed font-light">
-                I agree to the terms and conditions and understand the deposit is non-refundable.
-              </label>
-            </div>
-            
-            {status.error && <p className="text-red-400 text-xs mt-2">{status.error}</p>}
+              <div className="flex items-start gap-4 mt-2">
+                <input type="checkbox" required id="terms" className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5" />
+                <label htmlFor="terms" className="text-[10px] md:text-[11px] text-white/40 leading-relaxed font-light">
+                  I agree to the terms and conditions. Creating a profile is free.
+                </label>
+              </div>
+              
+              {status.error && <p className="text-red-400 text-xs mt-2">{status.error}</p>}
 
-            <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#193546] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 btn-glow">
-              {status.submitting ? 'INITIALIZING...' : `PAY $${selectedAmount}`}
-            </button>
-          </form>
+              <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#193546] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 btn-glow">
+                {status.submitting ? 'CREATING PROFILE...' : 'JOIN FREE'}
+              </button>
+            </form>
+          )}
         </div>
+      </div>
+
+      {/* PREMIUM BOOTHS — High-Ticket Section */}
+      <div className="max-w-6xl w-full flex flex-col items-center mb-12 md:mb-20">
+        <div className="text-center mb-8 md:mb-12">
+          <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] font-black uppercase mb-4 block">When You're Ready to Level Up</span>
+          <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase italic">Premium <span className="not-italic text-[#1B7FDC]">Booth Packages</span></h2>
+          <p className="text-white/50 text-sm mt-4 max-w-xl mx-auto">Already know you want a booth at our next event? Our premium packages include dedicated space, marketing support, and a custom AI-generated offer.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+          <TierCard 
+            title="Standard Booth" 
+            price="FROM $250" 
+            desc="6ft table & 2 chairs. Prime placement. Core revenue stream."
+            features={["6ft Table & 2 Chairs", "Prime Placement", "Event Listing Inclusion", "Social Media Mention"]}
+          />
+          <TierCard 
+            title="Flagship Booth" 
+            price="FROM $500" 
+            desc="Maximum authority. Premium corner positions. Featured on all promotions."
+            features={["Premium Corner Placement", "Featured on Promotions", "Social Media Shoutout", "VIP Platform Listing"]}
+            highlighted
+          />
+        </div>
+        <p className="text-white/40 text-xs mt-6 text-center max-w-lg">
+          Request a premium booth and our AI will generate a custom offer tailored to your brand. You'll receive your personalized offer and payment link by email.
+        </p>
+        <Link to="/contact" className="mt-6">
+          <button className="px-8 py-4 liquid-glass text-white font-bold rounded-xl tracking-[0.2em] text-[11px] uppercase hover:bg-white/10 transition-all">
+            <Crown className="w-4 h-4 inline mr-2 text-[#0DB8D3]" />
+            Request Premium Booth
+          </button>
+        </Link>
+      </div>
+
+      {/* Value Props */}
+      <div className="max-w-7xl w-full grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-12">
+        <VendorFeature title="Foot Traffic" desc="Direct access to a curated, high-intent local audience." />
+        <VendorFeature title="Network Effects" desc="Join a growing community of top-tier creators and brands." />
+        <VendorFeature title="Professional Media" desc="High-quality photos and video content for your brand." />
+        <VendorFeature title="VIP Access" desc="Guest tickets and cross-promotional opportunities." />
       </div>
     </div>
   );
