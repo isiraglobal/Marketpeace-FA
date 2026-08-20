@@ -1,7 +1,7 @@
 /**
  * MARKETPEACE — Google Apps Script Form Backend & AI Cron Engine
  *
- * Dedicated strictly to Form Submissions & AI Offer Cron Automation.
+ * Dedicated strictly to Form Submissions & AI Cron Automation.
  *
  * ─── ACTIVE FORM SHEETS ONLY ───
  * 1. Vendors     (Free vendor profile + High-ticket booth requests)
@@ -9,20 +9,29 @@
  * 3. Venues      (Venue host & partnership applications)
  * 4. Contacts    (Contact messages, Referral Network signups, Booth inquiries, City requests)
  * 5. Visitors    (Master Lead List: Popup leads, Newsletter subscribers & ALL incoming leads)
+ * 6. Cities      (Expansion nodes readable by the public site + edited by admin)
+ *
+ * ─── ACTIONS ───
+ *   submit            → write any form type (+ lead sync + email + Discord)
+ *   updateStatus      → mark Vendor/Attendee Paid/Confirmed from Stripe webhook
+ *   getVenues         → public site venue directory (POST)
+ *   getCities         → public site expansion nodes (POST or GET ?action=getCities)
+ *   updateCities      → admin city node editor (POST, auth via Vercel)
+ *   cronProcessAIOffers  → AI offer generation + email + payment link (every ~10m)
+ *   cronProcessFollowUps → nudge unpaid vendors with outstanding offers (every 6h)
  *
  * ─── ONE-TIME SETUP ───
  * 1. Extensions → Apps Script, replace Code.gs with this file, save.
- * 2. In the function dropdown, select `setupSheets` and click Run (creates & formats the 5 form sheets).
+ * 2. In the function dropdown, select `setupSheets` and click Run (creates & formats the 5 form sheets + Cities).
  * 3. Project Settings (gear icon) → Script Properties → Add:
  *    - DISCORD_WEBHOOK_URL: Your Discord Webhook URL (optional)
  *    - INTERNAL_SECRET: Ngl6yoAFUTTbXp3OdPvPUPaFzPlbsIR0HgXNv2AWHsE=
  *    - NVIDIA_NIM_API_KEY: Your NVIDIA NIM API key for AI offers (optional, has built-in smart fallback)
  *    - STRIPE_SECRET_KEY: Your Stripe secret key (optional, for payment links)
  * 4. Deploy → New Deployment → Web app → Execute as: Me → Who has access: Anyone
- * 5. Triggers (clock icon) → Add Trigger:
- *    - Function: cronProcessAIOffers
- *    - Event source: Time-driven
- *    - Type: Minutes timer → Every 5 minutes (or 10 minutes)
+ * 5. In the function dropdown, select `setupTriggers` and click Run once.
+ *    This creates BOTH cron triggers automatically (10-minute AI offers + 6-hour follow-ups).
+ *    Or add them manually via the clock icon as before.
  */
 
 const SHEET_ID = '1O2cJqGK2qNAHA9mw2vC4szRtfLshfL0jjmrQicEok6I';
@@ -42,11 +51,11 @@ const SHEET_DEFS = [
       'Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email', 'Phone', 'Instagram',
       'Category', 'ProfileType', 'Website', 'Tier', 'Amount', 'PaymentMethod', 'StripeSessionID',
       'ReceiptURL', 'Notes', 'LastUpdated', 'OfferAmount', 'OfferSubject', 'OfferBody',
-      'PaymentLinkURL', 'OfferSentAt', 'OfferStatus'
+      'PaymentLinkURL', 'OfferSentAt', 'OfferStatus', 'FollowUpAt', 'FollowUpCount'
     ],
-    statuses: ['Free Profile', 'Pending', 'Offer Sent', 'Paid', 'Confirmed', 'Cancelled', 'Refunded'],
+    statuses: ['Free Profile', 'Pending', 'Offer Sent', 'Offer Follow-Up', 'Paid', 'Confirmed', 'Cancelled', 'Refunded'],
     color: '#0DB8D3',
-    widths: [180, 140, 120, 160, 200, 200, 140, 160, 160, 120, 200, 100, 80, 120, 200, 200, 300, 180, 100, 250, 320, 220, 180, 120],
+    widths: [180, 140, 120, 160, 200, 200, 140, 160, 160, 120, 200, 100, 80, 120, 200, 200, 300, 180, 100, 250, 320, 220, 180, 120, 180, 120],
   },
   {
     name: 'Attendees',
@@ -75,6 +84,13 @@ const SHEET_DEFS = [
     statuses: ['Subscribed', 'Lead', 'Vendor Lead', 'Attendee Lead', 'Venue Lead', 'Unsubscribed'],
     color: '#1B7FDC',
     widths: [180, 160, 220, 140, 150, 250, 120, 180],
+  },
+  {
+    name: 'Cities',
+    headers: ['Name', 'Status', 'Date', 'LastUpdated'],
+    statuses: ['Active', 'Planned', 'Completed', 'Cancelled'],
+    color: '#1B7FDC',
+    widths: [220, 120, 160, 180],
   },
 ];
 
@@ -132,7 +148,7 @@ function setupSheets() {
   });
 
   // Remove unused/legacy non-form sheets if present
-  const UNUSED_SHEETS = ['Cities', 'Analytics', 'Transactions', 'Newsletter', 'CityRequests', 'Sheet1'];
+  const UNUSED_SHEETS = ['Analytics', 'Transactions', 'Newsletter', 'CityRequests', 'Sheet1'];
   UNUSED_SHEETS.forEach(oldName => {
     const s = ss.getSheetByName(oldName);
     if (s && ss.getSheets().length > 1) {
@@ -282,6 +298,18 @@ function doPost(e) {
       case 'processPendingOffers':
         return handleCronProcessAIOffers(ss);
 
+      case 'cronProcessFollowUps':
+        return handleCronProcessFollowUps(ss);
+
+      case 'getVenues':
+        return handleGetVenues(ss);
+
+      case 'getCities':
+        return handleGetCities(ss);
+
+      case 'updateCities':
+        return handleUpdateCities(ss, data);
+
       case 'health':
         return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID, sheets: ss.getSheets().map(s => s.getName()) });
 
@@ -301,6 +329,9 @@ function doGet(e) {
     const action = (e && e.parameter && e.parameter.action) || 'health';
     if (action === 'health') {
       return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID, sheets: ss.getSheets().map(s => s.getName()) });
+    }
+    if (action === 'getCities') {
+      return handleGetCities(ss);
     }
     return respond({ error: 'Unknown action' });
   } catch (err) {
@@ -369,6 +400,88 @@ function handleSubmit(ss, data) {
   return respond({ success: true, transactionID: tid });
 }
 
+/* ─── Action: getVenues ─── */
+function handleGetVenues(ss) {
+  const sheet = ss.getSheetByName('Venues');
+  if (!sheet) return respond({ error: 'Venues sheet not found' });
+
+  const rows = sheet.getDataRange().getValues();
+  const colMap = getColMap(sheet);
+  if (rows.length < 2) return respond([]);
+
+  const venues = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const venueName = colMap['VenueName'] ? String(r[colMap['VenueName'] - 1] || '').trim() : '';
+    if (!venueName) continue;
+    venues.push({
+      timestamp: colMap['Timestamp'] ? String(r[colMap['Timestamp'] - 1] || '') : '',
+      status: colMap['Status'] ? String(r[colMap['Status'] - 1] || '') : '',
+      venueName,
+      contactName: colMap['ContactName'] ? String(r[colMap['ContactName'] - 1] || '') : '',
+      email: colMap['Email'] ? String(r[colMap['Email'] - 1] || '') : '',
+      phone: colMap['Phone'] ? String(r[colMap['Phone'] - 1] || '') : '',
+      location: colMap['Location'] ? String(r[colMap['Location'] - 1] || '') : '',
+      city: colMap['City'] ? String(r[colMap['City'] - 1] || '') : '',
+      capacity: colMap['Capacity'] ? String(r[colMap['Capacity'] - 1] || '') : '',
+      hasParking: colMap['HasParking'] ? String(r[colMap['HasParking'] - 1] || '') : '',
+      hasWiFi: colMap['HasWiFi'] ? String(r[colMap['HasWiFi'] - 1] || '') : '',
+      indoorOutdoor: colMap['IndoorOutdoor'] ? String(r[colMap['IndoorOutdoor'] - 1] || '') : '',
+      notes: colMap['Notes'] ? String(r[colMap['Notes'] - 1] || '') : '',
+      contractURL: colMap['ContractURL'] ? String(r[colMap['ContractURL'] - 1] || '') : '',
+      eventDate: colMap['EventDate'] ? String(r[colMap['EventDate'] - 1] || '') : '',
+      lastUpdated: colMap['LastUpdated'] ? String(r[colMap['LastUpdated'] - 1] || '') : '',
+    });
+  }
+  return respond(venues);
+}
+
+/* ─── Action: getCities ─── */
+function handleGetCities(ss) {
+  const sheet = ss.getSheetByName('Cities');
+  if (!sheet) return respond([]);
+
+  const rows = sheet.getDataRange().getValues();
+  const colMap = getColMap(sheet);
+  if (rows.length < 2) return respond([]);
+
+  const cities = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const name = colMap['Name'] ? String(r[colMap['Name'] - 1] || '').trim() : '';
+    if (!name) continue;
+    cities.push({
+      name,
+      status: colMap['Status'] ? String(r[colMap['Status'] - 1] || '') : '',
+      date: colMap['Date'] ? String(r[colMap['Date'] - 1] || '') : '',
+    });
+  }
+  return respond(cities.slice(0, 50));
+}
+
+/* ─── Action: updateCities ─── */
+function handleUpdateCities(ss, data) {
+  const cities = data && Array.isArray(data.cities) ? data.cities : null;
+  if (!cities) return respond({ error: 'Missing cities array' });
+
+  const sheet = ensureSheet(ss, 'Cities');
+  sheet.clearContents().clearFormats();
+  sheet.getRange(1, 1, 1, 4).setValues([['Name', 'Status', 'Date', 'LastUpdated']])
+    .setBackground('#1B7FDC').setFontColor('#ffffff').setFontWeight('bold');
+
+  if (cities.length > 0) {
+    const writeRows = cities.map(c => [
+      sanitize(c.name, 100),
+      sanitize(c.status || 'Planned', 50),
+      sanitize(c.date || '', 50),
+      nowISO(),
+    ]);
+    sheet.getRange(2, 1, writeRows.length, 4).setValues(writeRows);
+  }
+  SpreadsheetApp.flush();
+  return respond({ success: true, count: cities.length });
+}
+
 /* ─── Action: updateStatus ─── */
 function handleUpdateStatus(ss, data) {
   const map = { VENDOR: 'Vendors', ATTENDEE: 'Attendees' };
@@ -426,7 +539,8 @@ function buildRow(type, data, tid) {
         s(data.amount || '0', 20),
         s(data.paymentMethod || 'free', 20),
         '', '', '', ts,
-        '', '', '', '', '', (isFree ? 'N/A' : 'Pending AI')
+        '', '', '', '', '', (isFree ? 'N/A' : 'Pending AI'),
+        '', '0'
       ];
 
     case 'ATTENDEE':
@@ -632,6 +746,162 @@ function handleCronProcessAIOffers(ss) {
   }
 
   return respond({ success: true, processed: processedCount, sent: sentCount });
+}
+
+/* ═══════════════════════════════════════════
+   CRON JOB: OFFER FOLLOW-UPS (Nudge unpaid vendors)
+   ═══════════════════════════════════════════ */
+
+/**
+ * Trigger-ready Cron function.
+ * 1. Scans Vendors where an AI offer was SENT but not yet paid.
+ * 2. After FOLL_UP_DAYS with no payment, sends a polite nudge email
+ *    re-forwarding the payment link.
+ * 3. Max MAX_FOLLOW_UPS per vendor; records FollowUpAt + FollowUpCount.
+ */
+const FOLL_UP_DAYS = 3;      // days after offer sent to start nudging
+const FOLLOW_UP_INTERVAL_MS = 2 * 24 * 60 * 60 * 1000; // min gap between nudges
+const MAX_FOLLOW_UPS = 3;
+
+function cronProcessFollowUps() {
+  const ss = getSS();
+  const res = handleCronProcessFollowUps(ss);
+  Logger.log('Follow-up cron execution result: ' + JSON.stringify(res));
+}
+
+function handleCronProcessFollowUps(ss) {
+  const sheet = ss.getSheetByName('Vendors');
+  if (!sheet) return respond({ processed: 0, sent: 0 });
+
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length < 2) return respond({ processed: 0, sent: 0 });
+
+  const colMap = getColMap(sheet);
+  let processedCount = 0;
+  let sentCount = 0;
+  const now = new Date().getTime();
+
+  for (let i = 1; i < rows.length; i++) {
+    const rowIdx = i + 1;
+    const r = rows[i];
+
+    const status = colMap['Status'] ? String(r[colMap['Status'] - 1] || '').trim() : '';
+    const offerStatus = colMap['OfferStatus'] ? String(r[colMap['OfferStatus'] - 1] || '').trim() : '';
+    const offerSentAt = colMap['OfferSentAt'] ? String(r[colMap['OfferSentAt'] - 1] || '').trim() : '';
+    const paymentLink = colMap['PaymentLinkURL'] ? String(r[colMap['PaymentLinkURL'] - 1] || '').trim() : '';
+    const email = colMap['Email'] ? String(r[colMap['Email'] - 1] || '').trim() : '';
+    const name = colMap['Name'] ? String(r[colMap['Name'] - 1] || '').trim() : '';
+    const businessName = colMap['BusinessName'] ? String(r[colMap['BusinessName'] - 1] || '').trim() : '';
+    const followUpAt = colMap['FollowUpAt'] ? String(r[colMap['FollowUpAt'] - 1] || '').trim() : '';
+    const followUpCountRaw = colMap['FollowUpCount'] ? String(r[colMap['FollowUpCount'] - 1] || '0').trim() : '0';
+
+    // Only vendors who got an offer and haven't paid
+    const isOfferOutstanding = status !== 'Paid' && status !== 'Confirmed' && status !== 'Cancelled' && status !== 'Refunded';
+    const offerWasSent = offerStatus.toLowerCase() === 'sent' || offerStatus.toLowerCase() === 'offer follow-up';
+    const hasLink = paymentLink.length > 0 && email.length > 0;
+    if (!isOfferOutstanding || !offerWasSent || !hasLink) continue;
+
+    const followUpCount = parseInt(followUpCountRaw, 10) || 0;
+    if (followUpCount >= MAX_FOLLOW_UPS) continue;
+
+    // Determine the reference timestamp for the nudge window
+    const refTs = followUpAt || offerSentAt;
+    const refTime = refTs ? new Date(refTs).getTime() : 0;
+    if (!refTime) continue;
+
+    const daysSinceRef = (now - refTime) / (24 * 60 * 60 * 1000);
+    const minDays = followUpCount === 0 ? FOLL_UP_DAYS : FOLLOW_UP_INTERVAL_MS / (24 * 60 * 60 * 1000);
+    if (daysSinceRef < minDays) continue;
+
+    processedCount++;
+
+    const subject = `${name.split(' ')[0] || 'Friend'}, your MARKETPEACE booth is still reserved — pay now`;
+    const sent = sendFollowUpEmail({ name, businessName, email, paymentLink, followUpCount: followUpCount + 1 });
+
+    if (sent) {
+      if (colMap['FollowUpAt']) sheet.getRange(rowIdx, colMap['FollowUpAt']).setValue(nowISO());
+      if (colMap['FollowUpCount']) sheet.getRange(rowIdx, colMap['FollowUpCount']).setValue(followUpCount + 1);
+      if (colMap['Status']) sheet.getRange(rowIdx, colMap['Status']).setValue('Offer Follow-Up');
+      if (colMap['LastUpdated']) sheet.getRange(rowIdx, colMap['LastUpdated']).setValue(nowISO());
+      SpreadsheetApp.flush();
+      sentCount++;
+      notifyDiscord('🔁 Offer Follow-Up Sent (Cron)',
+        `**Vendor:** ${sanitize(businessName || name, 50)}\n**Nudge #:** ${followUpCount + 1} of ${MAX_FOLLOW_UPS}`,
+        15105570);
+    } else {
+      console.error(`Follow-up email failed for row ${rowIdx} (${name})`);
+    }
+  }
+
+  return respond({ success: true, processed: processedCount, sent: sentCount });
+}
+
+function sendFollowUpEmail(v) {
+  if (!v.email || !v.paymentLink) return false;
+  const htmlBody = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#0f1b24;font-family:Arial,Helvetica,sans-serif;">
+<div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <h1 style="color:#0DB8D3;font-size:28px;letter-spacing:8px;margin:0;">MARKETPEACE</h1>
+    <p style="color:#6b7280;font-size:11px;letter-spacing:3px;margin-top:8px;">THE INFRASTRUCTURE OF INDEPENDENCE</p>
+  </div>
+  <div style="background:#193546;border:1px solid rgba(13,184,211,0.2);border-radius:16px;padding:32px;">
+    <p style="color:#0DB8D3;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px 0;">Your Booth Is Still Reserved</p>
+    <h2 style="color:#ffffff;font-size:22px;margin:0 0 16px 0;">Hey ${sanitize(v.name, 50)},</h2>
+    <p style="color:#d1d5db;font-size:15px;line-height:1.6;margin:0 0 16px 0;">Your custom MARKETPEACE booth offer for <strong style="color:#ffffff;">${sanitize(v.businessName || 'your brand', 100)}</strong> is still reserved, but the payment window is closing. Secure your spot before it opens to another creator.</p>
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="${v.paymentLink}" style="display:inline-block;background:#0DB8D3;color:#0f1b24;text-decoration:none;font-weight:bold;font-size:14px;letter-spacing:2px;padding:16px 40px;border-radius:12px;">SECURE YOUR SPOT</a>
+    </div>
+    <p style="color:#6b7280;font-size:11px;text-align:center;margin-top:16px;">Questions? foreignaffairsllc2017@gmail.com</p>
+  </div>
+</div></body></html>`;
+
+  const plainText = [
+    'MARKETPEACE — Your Booth Is Still Reserved',
+    '',
+    `Hey ${sanitize(v.name, 50)},`,
+    '',
+    `Your custom booth offer for ${sanitize(v.businessName || 'your brand', 100)} is still reserved, but the payment window is closing.`,
+    '',
+    `Secure your spot: ${v.paymentLink}`,
+    '',
+    'Questions? foreignaffairsllc2017@gmail.com',
+  ].join('\n');
+
+  try {
+    MailApp.sendEmail({
+      to: v.email,
+      subject: `${sanitize(v.name.split(' ')[0], 30)}, your MARKETPEACE booth is still reserved`,
+      body: plainText,
+      htmlBody: htmlBody,
+      name: 'MARKETPEACE',
+    });
+    return true;
+  } catch (e) {
+    console.error('Follow-up email error:', e.toString());
+    return false;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ONE-TIME TRIGGER SETUP (run manually once)
+   ═══════════════════════════════════════════ */
+function setupTriggers() {
+  const existing = ScriptApp.getProjectTriggers();
+  existing.forEach(t => ScriptApp.deleteTrigger(t));
+
+  ScriptApp.newTrigger('cronProcessAIOffers')
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+
+  ScriptApp.newTrigger('cronProcessFollowUps')
+    .timeBased()
+    .everyHours(6)
+    .create();
+
+  Logger.log('✅ Triggers created: cronProcessAIOffers (10m), cronProcessFollowUps (6h)');
 }
 
 /* ═══════════════════════════════════════════

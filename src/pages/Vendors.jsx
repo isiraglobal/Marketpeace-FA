@@ -21,7 +21,7 @@ export default function Vendors() {
 
   // Booth interest form (replaces "→ /contact" dead-end)
   const [boothOpen, setBoothOpen] = useState(false);
-  const [boothData, setBoothData] = useState({ name: '', email: '', tier: 'Standard', message: '' });
+  const [boothData, setBoothData] = useState({ name: '', businessName: '', email: '', tier: 'Standard', message: '' });
   const [boothStatus, setBoothStatus] = useState({ submitting: false, success: false, error: null });
 
   useEffect(() => {
@@ -298,18 +298,24 @@ export default function Vendors() {
                 </h4>
                 <button onClick={() => setBoothOpen(false)} className="text-white/30 hover:text-white/60 text-xs uppercase tracking-widest font-bold transition-colors">Cancel</button>
               </div>
-              <form
+<form
                 id="booth-request-form"
                 onSubmit={async (e) => {
                   e.preventDefault();
                   setBoothStatus({ submitting: true, success: false, error: null });
                   try {
+                    // High-ticket booth application → lands in Vendors sheet with tier
+                    // Standard/Flagship. The Apps Script cron (cronProcessAIOffers) picks
+                    // this up, generates a custom AI offer, and emails a Stripe payment link.
                     await submitForm({
-                      type: 'Contact',
+                      type: 'Vendor',
                       name: boothData.name,
+                      businessName: boothData.businessName,
                       email: boothData.email,
-                      subject: 'Booth Request',
-                      message: `Preferred Tier: ${boothData.tier}. ${boothData.message}`.trim(),
+                      instagram: '',
+                      category: 'General',
+                      tier: boothData.tier,
+                      message: boothData.message,
                     });
                     setBoothStatus({ submitting: false, success: true, error: null });
                     setBoothOpen(false);
@@ -325,12 +331,16 @@ export default function Vendors() {
                     <Input id="booth-name" placeholder="Full Name" value={boothData.name} onChange={e => setBoothData({ ...boothData, name: e.target.value })} />
                   </div>
                   <div>
+                    <label htmlFor="booth-business" className="sr-only">Brand Name</label>
+                    <Input id="booth-business" placeholder="Brand Name" value={boothData.businessName} onChange={e => setBoothData({ ...boothData, businessName: e.target.value })} />
+                  </div>
+                </div>
+<div>
                     <label htmlFor="booth-email" className="sr-only">Email Address</label>
                     <Input id="booth-email" type="email" placeholder="Email Address" value={boothData.email} onChange={e => setBoothData({ ...boothData, email: e.target.value })} />
                   </div>
-                </div>
-                <div>
-                  <label htmlFor="booth-tier" className="sr-only">Preferred Tier</label>
+                  <div>
+                    <label htmlFor="booth-tier" className="sr-only">Preferred Tier</label>
                   <select
                     id="booth-tier"
                     value={boothData.tier}
