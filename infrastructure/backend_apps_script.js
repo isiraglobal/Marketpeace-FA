@@ -25,14 +25,13 @@ const INTERNAL_SECRET = PROPS.getProperty('INTERNAL_SECRET');
 const NVIDIA_NIM_API_KEY = PROPS.getProperty('NVIDIA_NIM_API_KEY');
 const STRIPE_SECRET_KEY = PROPS.getProperty('STRIPE_SECRET_KEY');
 
-/* ─── Sheet Definitions ─── */
 const SHEET_DEFS = [
   {
     name: 'Vendors',
-    headers: ['Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email', 'Phone', 'Instagram', 'Category', 'ProfileType', 'Website', 'Tier', 'Amount', 'PaymentMethod', 'StripeSessionID', 'ReceiptURL', 'Notes', 'LastUpdated', 'OfferAmount', 'OfferDetails', 'PaymentLinkURL', 'OfferSentAt', 'OfferStatus'],
+    headers: ['Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email', 'Phone', 'Instagram', 'Category', 'ProfileType', 'Website', 'Tier', 'Amount', 'PaymentMethod', 'StripeSessionID', 'ReceiptURL', 'Notes', 'LastUpdated', 'OfferAmount', 'OfferSubject', 'OfferBody', 'PaymentLinkURL', 'OfferSentAt', 'OfferStatus'],
     statuses: ['Free Profile', 'Pending', 'Offer Sent', 'Paid', 'Confirmed', 'Cancelled', 'Refunded'],
     color: parseInt('0DB8D3', 16),
-    widths: [180, 140, 120, 160, 200, 200, 140, 160, 160, 120, 200, 100, 80, 120, 200, 200, 300, 180, 100, 300, 200, 180, 100],
+    widths: [180, 140, 120, 160, 200, 200, 140, 160, 160, 120, 200, 100, 80, 120, 200, 200, 300, 180, 100, 240, 300, 200, 180, 100],
   },
   {
     name: 'Attendees',
@@ -191,6 +190,17 @@ function findRowByTID(sheet, tid) {
   return -1;
 }
 
+function getColMap(sheet) {
+  const lastCol = sheet.getLastColumn();
+  if (lastCol < 1) return {};
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const map = {};
+  headers.forEach((h, i) => {
+    if (h) map[String(h).trim()] = i + 1;
+  });
+  return map;
+}
+
 /* ═══════════════════════════════════════════
    WEBHOOK HANDLERS
    ═══════════════════════════════════════════ */
@@ -206,16 +216,17 @@ function doPost(e) {
     const ss = SpreadsheetApp.openById(SHEET_ID);
 
     switch (data.action) {
-      case 'submit':        return handleSubmit(ss, data);
-      case 'updateStatus':  return handleUpdateStatus(ss, data);
-      case 'getCities':     return handleGetCities(ss);
-      case 'updateCities':  return handleUpdateCities(ss, data);
-      case 'getVenues':     return handleGetVenues(ss);
-      case 'updateVenue':   return handleUpdateVenue(ss, data);
-      case 'getAnalytics':  return handleGetAnalytics(ss);
-      case 'syncData':      return handleSyncData(ss, data);
-      case 'health':        return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID });
-      default:              return respond({ error: 'Unknown action' });
+      case 'submit':                return handleSubmit(ss, data);
+      case 'updateStatus':          return handleUpdateStatus(ss, data);
+      case 'processPendingOffers':  return handleProcessPendingOffers(ss);
+      case 'getCities':             return handleGetCities(ss);
+      case 'updateCities':          return handleUpdateCities(ss, data);
+      case 'getVenues':             return handleGetVenues(ss);
+      case 'updateVenue':           return handleUpdateVenue(ss, data);
+      case 'getAnalytics':          return handleGetAnalytics(ss);
+      case 'syncData':              return handleSyncData(ss, data);
+      case 'health':                return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID });
+      default:                      return respond({ error: 'Unknown action' });
     }
   } catch (err) {
     notifyDiscord('⚠️ System Error', sanitize(err.toString(), 300), 15158332);
@@ -255,7 +266,6 @@ function handleSubmit(ss, data) {
   sheet.appendRow(buildRow(data.type.toUpperCase(), data, tid));
 
   // ─── CITY REQUEST DISCORD ALERT ───
-  // REQUIREMENT: In discord, ONLY send the person name, email/phone, and the requested city
   if ((data.type || '').toUpperCase() === 'CITYREQUEST') {
     const locationParts = [data.city, data.state, data.country].filter(Boolean);
     const locationStr = locationParts.join(', ');
@@ -289,34 +299,10 @@ function handleSubmit(ss, data) {
       return respond({ success: true, transactionID: tid });
     }
 
-    // High-Ticket Booth Application Pipeline (when tier is Standard/Flagship or offer requested)
+    // High-Ticket Booth Application Pipeline with double-send guard
     try {
       const rowIdx = findRowByTID(sheet, tid);
-      const offer = generateCustomOffer(data);
-      const paymentLink = createStripePaymentLink(
-        offer.amount,
-        'MARKETPEACE Vendor Registration — ' + (offer.boothRecommendation || data.tier || 'Standard'),
-        { transactionID: tid, type: 'Vendor', tier: data.tier || 'Standard' }
-      );
-
-      // Update the sheet row with offer details (columns Q-U)
-      if (rowIdx > 0) {
-        const offerCols = sheet.getRange(rowIdx, 19, 1, 5); // Columns S-W
-        offerCols.setValues([[
-          offer.amount,
-          sanitize(offer.proposal, 1000),
-          paymentLink,
-          nowISO(),
-          'Sent',
-        ]]);
-        sheet.getRange(rowIdx, 3).setValue('Offer Sent');
-      }
-
-      sendOfferEmail(data, offer, paymentLink, tid);
-
-      notifyDiscord('🤖 AI Offer Generated',
-        `**Vendor:** ${sanitize(data.businessName || data.name, 50)}\n**Amount:** $${offer.amount}\n**ID:** ${tid.slice(0, 8)}***`,
-        3066993);
+      processVendorOffer(ss, sheet, rowIdx, data, tid);
     } catch (offerErr) {
       console.error('Offer pipeline error:', offerErr.toString());
       notifyDiscord('⚠️ Offer Pipeline Error',
@@ -326,6 +312,94 @@ function handleSubmit(ss, data) {
   }
 
   return respond({ success: true, transactionID: tid });
+}
+
+/**
+ * Generates and records custom AI vendor offer.
+ * IDEMPOTENCY: Checks OfferStatus and OfferSentAt so AI NEVER double-sends.
+ */
+function processVendorOffer(ss, sheet, rowIdx, data, tid) {
+  const colMap = getColMap(sheet);
+
+  // Anti-Double-Send Guard: Check if offer has already been sent
+  if (rowIdx > 0) {
+    const currentOfferStatus = colMap['OfferStatus'] ? String(sheet.getRange(rowIdx, colMap['OfferStatus']).getValue() || '').trim() : '';
+    const currentOfferSentAt = colMap['OfferSentAt'] ? String(sheet.getRange(rowIdx, colMap['OfferSentAt']).getValue() || '').trim() : '';
+    if (currentOfferStatus.toLowerCase() === 'sent' || currentOfferSentAt) {
+      Logger.log(`ℹ️ Offer already marked as sent for ${tid} at ${currentOfferSentAt}. Skipping to prevent double-send.`);
+      return { skipped: true, reason: 'Already sent' };
+    }
+  }
+
+  const offer = generateCustomOffer(data);
+  const paymentLink = createStripePaymentLink(
+    offer.amount,
+    'MARKETPEACE Vendor Registration — ' + (offer.boothRecommendation || data.tier || 'Standard'),
+    { transactionID: tid, type: 'Vendor', tier: data.tier || 'Standard' }
+  );
+
+  const subject = sanitize(data.name, 50) + ', your custom MARKETPEACE offer is ready — $' + offer.amount;
+  const sent = sendOfferEmail(data, offer, paymentLink, tid, subject);
+
+  // Record all details into dedicated sheet columns
+  if (rowIdx > 0) {
+    if (colMap['OfferAmount']) sheet.getRange(rowIdx, colMap['OfferAmount']).setValue(offer.amount);
+    if (colMap['OfferSubject']) sheet.getRange(rowIdx, colMap['OfferSubject']).setValue(sanitize(subject, 200));
+    if (colMap['OfferBody']) sheet.getRange(rowIdx, colMap['OfferBody']).setValue(sanitize(offer.proposal, 2000));
+    if (colMap['PaymentLinkURL']) sheet.getRange(rowIdx, colMap['PaymentLinkURL']).setValue(paymentLink);
+    if (colMap['OfferSentAt']) sheet.getRange(rowIdx, colMap['OfferSentAt']).setValue(nowISO());
+    if (colMap['OfferStatus']) sheet.getRange(rowIdx, colMap['OfferStatus']).setValue('Sent');
+    if (colMap['Status']) sheet.getRange(rowIdx, colMap['Status']).setValue('Offer Sent');
+    if (colMap['LastUpdated']) sheet.getRange(rowIdx, colMap['LastUpdated']).setValue(nowISO());
+  }
+
+  notifyDiscord('🤖 AI Offer Generated & Sent',
+    `**Vendor:** ${sanitize(data.businessName || data.name, 50)}\n**Amount:** $${offer.amount}\n**Subject:** ${sanitize(subject, 100)}\n**Status:** Sent\n**ID:** ${tid.slice(0, 8)}***`,
+    3066993);
+
+  return { success: true, amount: offer.amount, paymentLink: paymentLink, subject: subject };
+}
+
+/* ─── Action: processPendingOffers (Batch / Cron safe processor) ─── */
+function handleProcessPendingOffers(ss) {
+  const sheet = ensureSheet(ss, 'Vendors');
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length < 2) return respond({ processed: 0 });
+
+  const colMap = getColMap(sheet);
+  let count = 0;
+
+  for (let i = 1; i < rows.length; i++) {
+    const rowIdx = i + 1;
+    const r = rows[i];
+    const tid = colMap['TransactionID'] ? String(r[colMap['TransactionID'] - 1] || '') : '';
+    const status = colMap['Status'] ? String(r[colMap['Status'] - 1] || '') : '';
+    const tier = colMap['Tier'] ? String(r[colMap['Tier'] - 1] || '') : '';
+    const offerStatus = colMap['OfferStatus'] ? String(r[colMap['OfferStatus'] - 1] || '') : '';
+    const offerSentAt = colMap['OfferSentAt'] ? String(r[colMap['OfferSentAt'] - 1] || '') : '';
+    const email = colMap['Email'] ? String(r[colMap['Email'] - 1] || '') : '';
+    const name = colMap['Name'] ? String(r[colMap['Name'] - 1] || '') : '';
+    const businessName = colMap['BusinessName'] ? String(r[colMap['BusinessName'] - 1] || '') : '';
+    const instagram = colMap['Instagram'] ? String(r[colMap['Instagram'] - 1] || '') : '';
+
+    const isHighTicket = tier.toLowerCase() === 'standard' || tier.toLowerCase() === 'flagship';
+    const isPending = status.toLowerCase() === 'pending' || status === '';
+    const notSent = offerStatus.toLowerCase() !== 'sent' && !offerSentAt;
+
+    if (isHighTicket && isPending && notSent && email) {
+      const vendorData = {
+        name: name,
+        businessName: businessName,
+        email: email,
+        instagram: instagram,
+        tier: tier,
+      };
+      processVendorOffer(ss, sheet, rowIdx, vendorData, tid);
+      count++;
+    }
+  }
+
+  return respond({ success: true, processed: count });
 }
 
 /* ─── Action: updateStatus ─── */
@@ -343,14 +417,12 @@ function handleUpdateStatus(ss, data) {
   const rowIdx = findRowByTID(sheet, tid);
   if (rowIdx === -1) return respond({ error: 'Transaction not found' });
 
-  const statusCol = 3;
-  sheet.getRange(rowIdx, statusCol).setValue(sanitize(data.status, 50));
-  sheet.getRange(rowIdx, lastColIdx(name)).setValue(nowISO());
+  const colMap = getColMap(sheet);
 
-  const receiptCol = name === 'Vendors' ? 14 : 11;
-  if (data.receiptURL) sheet.getRange(rowIdx, receiptCol).setValue(sanitize(data.receiptURL, 500));
-  const sessionCol = name === 'Vendors' ? 13 : 10;
-  if (data.stripeSessionID) sheet.getRange(rowIdx, sessionCol).setValue(sanitize(data.stripeSessionID, 100));
+  if (colMap['Status']) sheet.getRange(rowIdx, colMap['Status']).setValue(sanitize(data.status, 50));
+  if (colMap['LastUpdated']) sheet.getRange(rowIdx, colMap['LastUpdated']).setValue(nowISO());
+  if (data.receiptURL && colMap['ReceiptURL']) sheet.getRange(rowIdx, colMap['ReceiptURL']).setValue(sanitize(data.receiptURL, 500));
+  if (data.stripeSessionID && colMap['StripeSessionID']) sheet.getRange(rowIdx, colMap['StripeSessionID']).setValue(sanitize(data.stripeSessionID, 100));
 
   const paid = data.status === 'Paid' || data.status === 'Confirmed';
   notifyDiscord(paid ? '💰 Payment Received' : '🔄 Status Update',
@@ -524,6 +596,7 @@ function buildRow(type, data, tid) {
         s(data.amount || '0', 20),
         s(data.paymentMethod || 'free', 20),
         '', '', '', ts,
+        '', '', '', '', '', (data.tier === 'Free' ? 'N/A' : 'Pending'),
       ];
     case 'ATTENDEE':
       return [ts, tid, s(data.status || 'Registered', 50), s(data.name, 100), s(data.email, 254), s(data.phone, 20), s(data.ticketType || 'Free', 30), s(data.amount || '0', 20), s(data.referrer, 100), '', '', 'No', '', ts];
@@ -813,8 +886,8 @@ function createStripePaymentLink(amount, description, metadata) {
 /**
  * Sends a branded HTML email with the AI-generated offer and Stripe Payment Link.
  */
-function sendOfferEmail(data, offer, paymentLink, tid) {
-  if (!data.email) return;
+function sendOfferEmail(data, offer, paymentLink, tid, customSubject) {
+  if (!data.email) return false;
 
   const perksHtml = (offer.perks || []).map(function(p) {
     return '<li style="padding:4px 0;color:#d1d5db;font-size:14px;">✓ ' + sanitize(p, 200) + '</li>';
@@ -888,16 +961,20 @@ function sendOfferEmail(data, offer, paymentLink, tid) {
     '— The MARKETPEACE Team',
   ].join('\n');
 
+  const emailSubject = customSubject || (sanitize(data.name, 50) + ', your custom MARKETPEACE offer is ready — $' + offer.amount);
+
   try {
     MailApp.sendEmail({
       to: data.email,
-      subject: sanitize(data.name, 50) + ', your custom MARKETPEACE offer is ready — $' + offer.amount,
+      subject: emailSubject,
       body: plainText,
       htmlBody: htmlBody,
       name: 'MARKETPEACE',
     });
+    return true;
   } catch (e) {
     console.error('Offer email failed:', e.toString());
+    return false;
   }
 }
 
@@ -969,8 +1046,18 @@ function onEdit(e) {
 }
 
 /* ═══════════════════════════════════════════
-   DISABLE ORIGINAL onEdit — kept for compatibility
+   CRON TRIGGERS & AUTOMATION
    ═══════════════════════════════════════════ */
+
+/**
+ * Scheduled trigger function: processes any pending high-ticket offers
+ * with strict idempotency (guaranteed no double-sending).
+ */
+function processPendingOffers() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  handleProcessPendingOffers(ss);
+}
+
 function autoSync() {
   const ss = SpreadsheetApp.openById(SHEET_ID);
   let stats = '';
