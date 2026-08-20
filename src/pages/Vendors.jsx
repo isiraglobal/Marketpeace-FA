@@ -19,6 +19,11 @@ export default function Vendors() {
   const [status, setStatus] = useState({ submitting: false, success: false, error: null });
   const [upsellLoading, setUpsellLoading] = useState(false);
 
+  // Booth interest form (replaces "→ /contact" dead-end)
+  const [boothOpen, setBoothOpen] = useState(false);
+  const [boothData, setBoothData] = useState({ name: '', email: '', tier: 'Standard', message: '' });
+  const [boothStatus, setBoothStatus] = useState({ submitting: false, success: false, error: null });
+
   useEffect(() => {
     document.title = "MARKETPEACE | Join as a Vendor";
   }, []);
@@ -245,7 +250,7 @@ export default function Vendors() {
         <div className="text-center mb-8 md:mb-12">
           <span className="text-[#0DB8D3] tracking-[0.4em] text-[10px] font-black uppercase mb-4 block">When You're Ready to Level Up</span>
           <h2 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase italic">Premium <span className="not-italic text-[#1B7FDC]">Booth Packages</span></h2>
-          <p className="text-white/50 text-sm mt-4 max-w-xl mx-auto">Already know you want a booth at our next event? Our premium packages include dedicated space, marketing support, and a custom AI-generated offer.</p>
+          <p className="text-white/50 text-sm mt-4 max-w-xl mx-auto">Already know you want a booth at our next event? Drop your info below and we'll reach out with a custom offer tailored to your brand.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
           <TierCard 
@@ -262,15 +267,102 @@ export default function Vendors() {
             highlighted
           />
         </div>
-        <p className="text-white/40 text-xs mt-6 text-center max-w-lg">
-          Request a premium booth and our AI will generate a custom offer tailored to your brand. You'll receive your personalized offer and payment link by email.
-        </p>
-        <Link to="/contact" className="mt-6">
-          <button className="px-8 py-4 liquid-glass text-white font-bold rounded-xl tracking-[0.2em] text-[11px] uppercase hover:bg-white/10 transition-all">
-            <Crown className="w-4 h-4 inline mr-2 text-[#0DB8D3]" />
-            Request Premium Booth
-          </button>
-        </Link>
+
+        {/* Inline Booth Interest Form — no redirect */}
+        <div className="w-full max-w-2xl mt-8">
+          {!boothOpen && !boothStatus.success && (
+            <button
+              id="booth-request-btn"
+              onClick={() => setBoothOpen(true)}
+              className="w-full px-8 py-4 liquid-glass text-white font-bold rounded-xl tracking-[0.2em] text-[11px] uppercase hover:bg-white/10 transition-all"
+            >
+              <Crown className="w-4 h-4 inline mr-2 text-[#0DB8D3]" />
+              Request Premium Booth
+            </button>
+          )}
+
+          {boothStatus.success && (
+            <div id="booth-success" className="p-6 rounded-2xl bg-green-500/10 border border-green-500/20 text-center">
+              <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-3" />
+              <h4 className="text-white font-black text-lg mb-1 uppercase tracking-wide">Request Received!</h4>
+              <p className="text-white/60 text-sm">We'll reach out to <span className="text-[#0DB8D3] font-bold">{boothData.email}</span> with your custom offer.</p>
+            </div>
+          )}
+
+          {boothOpen && !boothStatus.success && (
+            <div id="booth-form" className="liquid-glass p-6 md:p-8 rounded-2xl border-[#0DB8D3]/20">
+              <div className="flex items-center justify-between mb-5">
+                <h4 className="text-white font-black text-lg uppercase italic tracking-tight">
+                  <Crown className="w-4 h-4 inline mr-2 text-[#0DB8D3]" />
+                  Booth Request
+                </h4>
+                <button onClick={() => setBoothOpen(false)} className="text-white/30 hover:text-white/60 text-xs uppercase tracking-widest font-bold transition-colors">Cancel</button>
+              </div>
+              <form
+                id="booth-request-form"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setBoothStatus({ submitting: true, success: false, error: null });
+                  try {
+                    await submitForm({
+                      type: 'Contact',
+                      name: boothData.name,
+                      email: boothData.email,
+                      subject: 'Booth Request',
+                      message: `Preferred Tier: ${boothData.tier}. ${boothData.message}`.trim(),
+                    });
+                    setBoothStatus({ submitting: false, success: true, error: null });
+                    setBoothOpen(false);
+                  } catch (err) {
+                    setBoothStatus({ submitting: false, success: false, error: err.message || 'Submission failed. Please try again.' });
+                  }
+                }}
+                className="flex flex-col gap-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="booth-name" className="sr-only">Full Name</label>
+                    <Input id="booth-name" placeholder="Full Name" value={boothData.name} onChange={e => setBoothData({ ...boothData, name: e.target.value })} />
+                  </div>
+                  <div>
+                    <label htmlFor="booth-email" className="sr-only">Email Address</label>
+                    <Input id="booth-email" type="email" placeholder="Email Address" value={boothData.email} onChange={e => setBoothData({ ...boothData, email: e.target.value })} />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="booth-tier" className="sr-only">Preferred Tier</label>
+                  <select
+                    id="booth-tier"
+                    value={boothData.tier}
+                    onChange={e => setBoothData({ ...boothData, tier: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white/70 outline-none focus:border-[#0DB8D3] transition-all appearance-none text-sm backdrop-blur-md"
+                  >
+                    <option value="Standard" className="bg-[#193546]">Standard Booth — from $250</option>
+                    <option value="Flagship" className="bg-[#193546]">Flagship Booth — from $500</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="booth-message" className="sr-only">Tell us about your brand</label>
+                  <textarea
+                    id="booth-message"
+                    placeholder="Tell us about your brand (optional)"
+                    value={boothData.message}
+                    onChange={e => setBoothData({ ...boothData, message: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 text-sm backdrop-blur-md h-24 resize-none"
+                  />
+                </div>
+                {boothStatus.error && <p className="text-red-400 text-xs font-bold">{boothStatus.error}</p>}
+                <button
+                  type="submit"
+                  disabled={boothStatus.submitting}
+                  className="w-full py-4 bg-[#0DB8D3] text-white font-black rounded-xl tracking-[0.2em] text-[11px] uppercase hover:bg-[#0bc1dd] transition-all shadow-lg disabled:opacity-50 btn-glow"
+                >
+                  {boothStatus.submitting ? 'SENDING...' : 'SUBMIT REQUEST'}
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Value Props */}

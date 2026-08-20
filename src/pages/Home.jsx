@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Users, Zap, Ticket, Calendar, Camera } from 'lucide-react';
+import { MapPin, Users, Zap, Ticket, Calendar, Camera, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { submitForm } from '../utils/stripeCheckout';
 
 const letters = [
   { char: 'm', src: '/assets/letters/M.png' },
@@ -268,9 +269,7 @@ function HomeSections({ cityNodes, venueNodes }) {
           <RewardTier tier="Tier 4" action="Refer 3 Approved Venues" reward="$300 Cash/Credit" />
           <RewardTier tier="Tier 5" action="Ticket Cluster (10+ Buyers)" reward="$25 per Cluster" />
         </div>
-        <Link to="/contact" className="mt-8 md:mt-12 w-full md:w-auto">
-          <button className="px-8 py-4 bg-transparent border border-white/20 text-white rounded-xl text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/5 transition-all w-full">Join the Network</button>
-        </Link>
+        <ReferralForm />
       </section>
 
       {/* UPCOMING EVENTS */}
@@ -340,11 +339,16 @@ function HomeSections({ cityNodes, venueNodes }) {
       <section className="w-full py-10 md:py-16 px-4 md:px-6 bg-[#0DB8D3]/5">
         <div className="max-w-4xl w-full mx-auto liquid-glass p-6 md:p-10 text-center shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#0DB8D3]/10 blur-[100px] -mr-24 -mt-24"></div>
-          <h3 className="text-3xl font-black text-white mb-6 tracking-tighter uppercase italic leading-[0.95]">Ready to <span className="not-italic text-[#1B7FDC]">Join?</span></h3>
-          <p className="text-white/50 text-base font-medium mb-8 leading-relaxed">Get in touch with our team to learn more.</p>
-          <Link to="/contact">
-            <button className="py-4 px-10 bg-white text-[#193546] font-black rounded-xl tracking-[0.3em] uppercase hover:bg-[#0DB8D3] hover:text-white transition-all text-[10px] btn-glow">Go to Contact Page</button>
-          </Link>
+          <h3 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase italic leading-[0.95]">Ready to <span className="not-italic text-[#1B7FDC]">Join?</span></h3>
+          <p className="text-white/50 text-base font-medium mb-8 leading-relaxed">Create your free profile and start connecting with local shoppers and events today.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/vendors">
+              <button className="py-4 px-10 bg-white text-[#193546] font-black rounded-xl tracking-[0.3em] uppercase hover:bg-[#0DB8D3] hover:text-white transition-all text-[10px] btn-glow">Join as Vendor</button>
+            </Link>
+            <Link to="/attendees">
+              <button className="py-4 px-10 bg-[#0DB8D3]/10 border border-[#0DB8D3]/30 text-white font-black rounded-xl tracking-[0.3em] uppercase hover:bg-[#0DB8D3] transition-all text-[10px]">Join as Attendee</button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -398,6 +402,79 @@ function RewardTier({ tier, action, reward }) {
       </div>
       <span className="text-white font-black italic text-xs amount">{reward}</span>
     </div>
+  );
+}
+
+function ReferralForm() {
+  const [data, setData] = useState({ name: '', email: '' });
+  const [st, setSt] = useState({ submitting: false, success: false, error: null });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSt({ submitting: true, success: false, error: null });
+    try {
+      await submitForm({
+        type: 'Contact',
+        name: data.name,
+        email: data.email,
+        subject: 'Referral Network',
+        message: `${data.name} wants to join the referral network.`,
+      });
+      setSt({ submitting: false, success: true, error: null });
+    } catch (err) {
+      setSt({ submitting: false, success: false, error: err.message || 'Submission failed. Please try again.' });
+    }
+  };
+
+  if (st.success) {
+    return (
+      <div id="referral-success" className="mt-8 md:mt-12 w-full max-w-sm mx-auto p-5 rounded-2xl bg-green-500/10 border border-green-500/20 text-center">
+        <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+        <p className="text-white font-black text-sm uppercase tracking-wide">You're in the network!</p>
+        <p className="text-white/50 text-xs mt-1">We'll be in touch at <span className="text-[#0DB8D3]">{data.email}</span></p>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      id="referral-form"
+      onSubmit={handleSubmit}
+      className="mt-8 md:mt-12 w-full max-w-sm mx-auto flex flex-col gap-3"
+    >
+      <div>
+        <label htmlFor="referral-name" className="sr-only">Full Name</label>
+        <input
+          id="referral-name"
+          type="text"
+          placeholder="Full Name"
+          required
+          value={data.name}
+          onChange={e => setData({ ...data, name: e.target.value })}
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 text-sm backdrop-blur-md"
+        />
+      </div>
+      <div>
+        <label htmlFor="referral-email" className="sr-only">Email Address</label>
+        <input
+          id="referral-email"
+          type="email"
+          placeholder="Email Address"
+          required
+          value={data.email}
+          onChange={e => setData({ ...data, email: e.target.value })}
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 text-sm backdrop-blur-md"
+        />
+      </div>
+      {st.error && <p className="text-red-400 text-xs font-bold text-center">{st.error}</p>}
+      <button
+        type="submit"
+        disabled={st.submitting}
+        className="w-full px-8 py-4 bg-transparent border border-white/20 text-white rounded-xl text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/5 disabled:opacity-50 transition-all"
+      >
+        {st.submitting ? 'JOINING...' : 'JOIN THE NETWORK'}
+      </button>
+    </form>
   );
 }
 
