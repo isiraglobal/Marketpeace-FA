@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Plus, Trash2, LogOut, Save, ShieldCheck } from 'lucide-react';
+import { Loader2, Plus, Trash2, LogOut, Save, ShieldCheck, TrendingUp, Store, Ticket, MapPin, Gift, Users, Building2, Star } from 'lucide-react';
 
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -11,6 +11,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [dash, setDash] = useState(null);
+  const [dashLoading, setDashLoading] = useState(false);
 
   useEffect(() => {
     document.title = "MARKETPEACE | Admin Portal";
@@ -27,6 +29,7 @@ export default function Admin() {
             const data = await citiesRes.json();
             if (Array.isArray(data)) setCities(data);
           }
+          fetchDash();
         }
       } catch (err) {
         // Not logged in
@@ -34,6 +37,21 @@ export default function Admin() {
     };
     checkAuth();
   }, []);
+
+  const fetchDash = async () => {
+    setDashLoading(true);
+    try {
+      const response = await fetch('/api/admin/dashboard');
+      if (response.ok) {
+        const data = await response.json();
+        setDash(data);
+      }
+    } catch (err) {
+      // silent — dashboard is best-effort
+    } finally {
+      setDashLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -111,6 +129,7 @@ export default function Admin() {
       setIsLoggedIn(false);
       setToken('');
       setCities([]);
+      setDash(null);
     });
   };
 
@@ -192,13 +211,20 @@ export default function Admin() {
             <p className="text-white/40 text-xs md:text-sm tracking-[0.1em] font-medium uppercase">MarketPeace Global Node Management</p>
           </div>
           <div className="flex gap-4">
-            <button 
+            <button
+              onClick={fetchDash}
+              disabled={dashLoading}
+              className="px-6 py-3 border border-white/10 text-white/60 hover:text-[#0DB8D3] hover:border-[#0DB8D3]/40 rounded-xl transition-all flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold"
+            >
+              <TrendingUp className="w-4 h-4" /> {dashLoading ? 'Refreshing...' : 'Refresh Data'}
+            </button>
+            <button
               onClick={handleLogout}
               className="px-6 py-3 border border-white/10 text-white/50 rounded-xl hover:text-white hover:border-white/30 transition-all flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold"
             >
               <LogOut className="w-4 h-4" /> Exit
             </button>
-            <button 
+            <button
               onClick={handleSave}
               disabled={loading}
               className="px-8 py-3 bg-[#0DB8D3] text-white rounded-xl hover:bg-[#0DB8D3]/80 transition-all flex items-center gap-2 text-[10px] uppercase tracking-widest font-black shadow-[0_10px_20px_rgba(13,184,211,0.3)]"
@@ -206,6 +232,37 @@ export default function Admin() {
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Commit Changes</>}
             </button>
           </div>
+        </div>
+
+        {/* ── REVENUE / OPS DASHBOARD ── */}
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-6">
+            <TrendingUp className="w-5 h-5 text-[#0DB8D3]" />
+            <h2 className="text-white text-sm md:text-lg font-black tracking-[0.3em] uppercase italic opacity-80">Revenue Overview</h2>
+            <div className="h-px flex-1 bg-white/5" />
+          </div>
+
+          {dashLoading && !dash ? (
+            <div className="liquid-glass p-12 flex items-center justify-center">
+              <Loader2 className="w-5 h-5 animate-spin text-[#0DB8D3]" />
+              <span className="ml-3 text-white/40 text-xs tracking-widest uppercase">Compiling data...</span>
+            </div>
+          ) : dash ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <DashCard icon={<Store className="w-4 h-4" />} label="Vendors" value={String(dash.vendors?.total ?? 0)} sub={`${dash.vendors?.paid ?? 0} paid · $${(dash.vendors?.revenue ?? 0)}`} />
+              <DashCard icon={<Ticket className="w-4 h-4" />} label="Attendees" value={String(dash.attendees?.total ?? 0)} sub={`${dash.attendees?.paid ?? 0} paid · $${(dash.attendees?.revenue ?? 0)}`} />
+              <DashCard icon={<MapPin className="w-4 h-4" />} label="Venues" value={String(dash.venues?.total ?? 0)} sub={`${dash.venues?.approved ?? 0} approved`} />
+              <DashCard icon={<Gift className="w-4 h-4" />} label="Referrers" value={String(dash.referrals?.referrers ?? 0)} sub={`$${dash.referrals?.cashOwed ?? 0} cash owed`} />
+              <DashCard icon={<Building2 className="w-4 h-4" />} label="Staff" value={String(dash.staff ?? 0)} sub="crew applications" />
+              <DashCard icon={<Star className="w-4 h-4" />} label="Sponsors" value={String(dash.sponsors ?? 0)} sub="partner inquiries" />
+              <DashCard icon={<Users className="w-4 h-4" />} label="Promoters" value={String(dash.promoters?.active ?? 0)} sub="active tiers" />
+              <DashCard icon={<Users className="w-4 h-4" />} label="Pending Payouts" value={String(dash.referrals?.payable ?? 0)} sub="referrals ready to pay" />
+            </div>
+          ) : (
+            <div className="liquid-glass p-12 flex items-center justify-center">
+              <span className="text-white/30 text-xs tracking-widest uppercase">No dashboard data available</span>
+            </div>
+          )}
         </div>
 
         <div className="liquid-glass overflow-hidden">
@@ -300,6 +357,16 @@ export default function Admin() {
           </motion.div>
         )}
       </div>
+    </div>
+  );
+}
+
+function DashCard({ icon, label, value, sub }) {
+  return (
+    <div className="liquid-glass p-6 flex flex-col gap-1">
+      <div className="flex items-center gap-2 mb-2">{icon}<span className="text-white/40 text-[9px] uppercase tracking-[0.2em] font-black">{label}</span></div>
+      <div className="text-3xl font-black text-white leading-none">{value}</div>
+      <div className="text-[10px] text-[#0DB8D3] font-bold mt-1">{sub}</div>
     </div>
   );
 }

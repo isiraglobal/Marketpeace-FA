@@ -17,17 +17,17 @@
  * Creates a Stripe checkout session and returns the redirect URL.
  * The server determines the canonical price — do NOT send `amount` from the client.
  *
- * @param {{ type: string, name?: string, email?: string, tier?: string }} params
+ * @param {{ type: string, name?: string, email?: string, tier?: string, event?: string, referrerCode?: string }} params
  * @returns {Promise<{ url: string, transactionID: string }>}
  */
-export async function fetchCheckoutSession({ type, name, email, tier }) {
+export async function fetchCheckoutSession({ type, name, email, tier, event, referrerCode }) {
   const response = await fetch('/api/stripe-checkout', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       // CSRF mitigation: non-simple Content-Type prevents cross-site form submission
     },
-    body: JSON.stringify({ type, name, email, tier }),
+    body: JSON.stringify({ type, name, email, tier, event, referrerCode }),
     // SECURITY: Never send credentials/cookies cross-origin
     credentials: 'same-origin',
   });

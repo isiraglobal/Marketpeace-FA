@@ -16,7 +16,7 @@ import { createRateLimiter } from './_middleware.js';
 // SECURITY: Price table lives ONLY on the server. Client input is ignored.
 const PRICE_TABLE = {
   Vendor: {
-    Standard: 25000, // $250 — not used for instant checkout, kept for reference
+    Standard: 25000, // $250 — full booth price (deposit charged at instant checkout)
     Flagship: 50000, // $500
   },
   Attendee: {
@@ -29,10 +29,14 @@ const PRICE_TABLE = {
   },
 };
 
+// Non-refundable deposit collected at instant booth checkout. The remainder of
+// the booth price is invoiced later (48h balance window at 70% capacity).
+const VENDOR_DEPOSIT_CENTS = 10000; // $100
+
 // SECURITY: Whitelist of allowed registration types for INSTANT checkout.
-// Vendor applications now go through the AI offer pipeline in Apps Script,
-// which generates a custom Stripe Payment Link and emails it directly.
-const ALLOWED_TYPES = ['Attendee', 'Upsell'];
+// Vendor instant checkout collects the $100 deposit to lock a booth; the full
+// balance is reconciled via the AI offer pipeline / webhook.
+const ALLOWED_TYPES = ['Vendor', 'Attendee', 'Upsell'];
 
 // Rate limiter: max 10 checkout attempts per IP per hour
 const rateLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60 * 60 * 1000 });
@@ -52,11 +56,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { type, name, email, tier } = req.body;
+    const { type, name, email, tier, event, referrerCode, transactionID: clientTID } = req.body;
 
     // SECURITY: Validate required fields with strict types/lengths
     if (!type || typeof type !== 'string' || !ALLOWED_TYPES.includes(type)) {
       return res.status(400).json({ error: 'Invalid registration type.' });
+    }
+
+    // SECURITY: If a transaction ID is supplied it must be a previously
+    // generated ID (e.g. returned from /api/submit) — the server never
+    // generates IDs from untrusted input.
+    if (clientTID !== undefined && clientTID !== null && clientTID !== '') {
+      if (typeof clientTID !== 'string' || !/^[A-Z]{3}-[A-Z0-9]{8,24}$/i.test(clientTID) || clientTID.length > 50) {
+        return res.status(400).json({ error: 'Invalid transaction ID.' });
+      }
     }
 
     if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 100) {
@@ -69,6 +82,18 @@ export default async function handler(req, res) {
       }
     }
 
+    if (event !== undefined && event !== null && event !== '') {
+      if (typeof event !== 'string' || event.length > 100) {
+        return res.status(400).json({ error: 'Invalid event.' });
+      }
+    }
+
+    if (referrerCode !== undefined && referrerCode !== null && referrerCode !== '') {
+      if (typeof referrerCode !== 'string' || !/^MP[-_][A-Z0-9]{2,6}$/i.test(referrerCode.trim())) {
+        return res.status(400).json({ error: 'Invalid referral code.' });
+      }
+    }
+
     // SECURITY: Validate tier and look up server-side canonical price
     const tierPrices = PRICE_TABLE[type];
     if (!tierPrices) {
@@ -76,10 +101,16 @@ export default async function handler(req, res) {
     }
 
     const resolvedTier = tier && tierPrices.hasOwnProperty(tier) ? tier : Object.keys(tierPrices)[0];
-    const amount = tierPrices[resolvedTier]; // Server-authoritative price — client cannot override
+    // SECURITY: Vendors pay the non-refundable deposit at instant checkout.
+    // Server-authoritative amount — client cannot override.
+    const amount = type === 'Vendor' ? VENDOR_DEPOSIT_CENTS / 100 : tierPrices[resolvedTier];
 
-    // SECURITY: Generate transaction ID server-side with cryptographic randomness
-    const transactionID = `${type.toUpperCase().slice(0, 3)}-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
+    // SECURITY: Prefer a validated TID from an earlier /api/submit (keeps the
+    // row and checkout linked, matching the AI payment-link model). Otherwise
+    // generate a transaction ID server-side with cryptographic randomness.
+    const transactionID = clientTID && typeof clientTID === 'string' && /^[A-Z]{3}-[A-Z0-9]{8,24}$/i.test(clientTID)
+      ? clientTID.toUpperCase()
+      : `${type.toUpperCase().slice(0, 3)}-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
 
     // SECURITY: APP_URL from environment variable — never trust Origin header
     const appUrl = process.env.APP_URL || 'https://marketpeace.com';
@@ -96,7 +127,7 @@ export default async function handler(req, res) {
     const productName = type === 'Upsell'
       ? `MarketPeace Get Involved Upgrade`
       : type === 'Vendor'
-        ? `MarketPeace Vendor Registration — ${resolvedTier}`
+        ? `MarketPeace Vendor Booth Deposit — ${resolvedTier}`
         : `MarketPeace ${type} Ticket — ${resolvedTier}`;
 
     const session = await stripe.checkout.sessions.create({
@@ -108,7 +139,7 @@ export default async function handler(req, res) {
             product_data: {
               name: productName,
               description: type === 'Vendor'
-                ? 'Booth registration deposit'
+                ? 'Non-refundable booth deposit (balance invoiced separately)'
                 : 'Event access ticket',
             },
             // SECURITY: Amount from server price table, converted to cents
@@ -127,7 +158,12 @@ export default async function handler(req, res) {
         type,
         transactionID,
         tier: resolvedTier,
-        // NOTE: name and email are in Stripe's own customer data; don't duplicate PII in metadata unnecessarily
+        status: type === 'Vendor' ? 'Deposit Paid' : 'Paid',
+        name,
+        email: email || '',
+        ...(event ? { event } : {}),
+        ...(referrerCode ? { referrerCode: referrerCode.trim().toUpperCase() } : {}),
+        // SECURITY: businessName is populated on Vendor instant checkout with the booth tier
       },
       // SECURITY: Expire session after 30 minutes to prevent stale sessions
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,

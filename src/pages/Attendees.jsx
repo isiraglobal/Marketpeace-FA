@@ -16,12 +16,15 @@ function AttendeeFeature({ title, desc, highlighted, wide }) {
 }
 
 export default function Attendees() {
-  const [formData, setFormData] = React.useState({ name: '', email: '' });
+  const [formData, setFormData] = React.useState({ name: '', email: '', referrer: '' });
   const [status, setStatus] = React.useState({ submitting: false, success: false });
   const [upsellLoading, setUpsellLoading] = React.useState(false);
 
   React.useEffect(() => {
     document.title = 'MARKETPEACE | Join the Community';
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) setFormData(f => ({ ...f, referrer: ref }));
   }, []);
 
   // FREE registration — no payment
@@ -35,6 +38,7 @@ export default function Attendees() {
         name: formData.name,
         email: formData.email,
         ticketType: 'Free',
+        referrer: formData.referrer,
       });
 
       setStatus({ submitting: false, success: true });
@@ -52,6 +56,7 @@ export default function Attendees() {
         name: formData.name,
         email: formData.email,
         tier: 'Regular',
+        referrerCode: formData.referrer || undefined,
       });
       window.location.href = url;
     } catch (err) {
@@ -160,6 +165,10 @@ export default function Attendees() {
                 <div>
                   <label htmlFor="attendee-email" className="sr-only">Email</label>
                   <input id="attendee-email" type="email" placeholder="Email" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 text-sm" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                </div>
+                <div>
+                  <label htmlFor="attendee-referrer" className="sr-only">Referral Code (optional)</label>
+                  <input id="attendee-referrer" type="text" placeholder="Referral Code (optional, e.g. MP-JOHN-G7K)" className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 text-sm" value={formData.referrer} onChange={e => setFormData({...formData, referrer: e.target.value})} />
                 </div>
                 <button type="submit" disabled={status.submitting} className="w-full mt-4 md:mt-6 py-3 sm:py-4 md:py-5 bg-white text-[#193546] font-bold rounded-xl sm:rounded-2xl tracking-[0.1em] md:tracking-[0.2em] text-[12px] sm:text-[12px] md:text-xs uppercase hover:bg-white/90 transition-all shadow-xl disabled:opacity-50 btn-glow">
                   {status.submitting ? 'JOINING...' : 'JOIN FREE'}

@@ -19,10 +19,13 @@ import { createRateLimiter } from './_middleware.js';
 // Rate limiter: max 5 form submissions per IP per 15 minutes
 const rateLimiter = createRateLimiter({ maxRequests: 5, windowMs: 15 * 60 * 1000 });
 
-const ALLOWED_TYPES = ['Vendor', 'Attendee', 'Venue', 'Contact', 'Visitor', 'Newsletter', 'CityRequest'];
+const ALLOWED_TYPES = ['Vendor', 'Attendee', 'Venue', 'Contact', 'Visitor', 'Newsletter', 'CityRequest', 'Staff', 'Sponsor', 'Promoter', 'VendorAgreement'];
 const ALLOWED_PAYMENT_METHODS = ['venmo', 'zelle', 'cashapp', 'stripe', 'free', 'none'];
 const ALLOWED_TIERS = ['Free', 'Standard', 'Flagship'];
 const ALLOWED_TICKET_TYPES = ['Free', 'Regular', 'Free-Social', 'Free-Friends'];
+const ALLOWED_PROMOTER_TIERS = ['S', 'A', 'B', 'C'];
+const ALLOWED_SPONSOR_TIERS = ['Supporting', 'Community', 'Presenting', 'Headline'];
+const ALLOWED_PAYOUT_METHODS = ['paypal', 'venmo', 'cashapp', 'zelle'];
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -71,7 +74,15 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Submission failed. Please try again.' });
     }
 
-    return res.status(200).json({ success: true });
+    let transactionID = '';
+    try {
+      const result = await response.json();
+      transactionID = String(result.transactionID || '').slice(0, 50);
+    } catch {
+      // response body not JSON — transactionID stays empty
+    }
+
+    return res.status(200).json({ success: true, transactionID });
   } catch (error) {
     console.error('[api/submit] Error', { message: error.message, type: req.body?.type });
     return res.status(500).json({ error: 'Submission failed. Please try again.' });
@@ -105,11 +116,16 @@ function sanitizePayload(data) {
     const paymentMethod = str(data.paymentMethod || 'free', 20);
     const tier = str(data.tier || 'Free', 20);
     const transactionID = str(data.transactionID, 50);
+    const referrer = str(data.referrer, 50);
+    const event = str(data.event, 100);
+    const message = str(data.message, 1000);
+    const website = str(data.website, 200);
 
     if (name.length < 2) return { error: 'Name is required (min 2 characters).' };
     if (businessName.length < 2) return { error: 'Business name is required.' };
     if (!validEmail(email)) return { error: 'Valid email is required.' };
     if (tier && !ALLOWED_TIERS.includes(tier)) return { error: 'Invalid tier selection.' };
+    if (referrer && !/^MP[-_][A-Z0-9]{2,6}/i.test(referrer)) return { error: 'Invalid referral code.' };
 
     return {
       payload: {
@@ -122,7 +138,13 @@ function sanitizePayload(data) {
         paymentMethod: paymentMethod || 'free',
         tier: tier || 'Free',
         transactionID,
-        status: tier === 'Free' ? 'Free Profile' : 'Pending',
+        referrer,
+        event,
+        message,
+        website,
+        // Vendor using the instant booth deposit may not be picked up by the AI
+        // offer cron (which only targets 'Pending' rows) until the webhook lands.
+        status: tier === 'Free' ? 'Free Profile' : (paymentMethod === 'stripe' ? 'Deposit Pending' : 'Pending'),
       },
     };
   }
@@ -178,13 +200,89 @@ function sanitizePayload(data) {
     const location = str(data.location, 200);
     const capacity = str(data.capacity, 20);
     const notes = str(data.notes, 1000);
+    const referrer = str(data.referrer, 50);
 
     if (venueName.length < 2) return { error: 'Venue name is required.' };
     if (name.length < 2) return { error: 'Contact name is required.' };
     if (!validEmail(email)) return { error: 'Valid email is required.' };
+    if (referrer && !/^MP[-_][A-Z0-9]{2,6}/i.test(referrer)) return { error: 'Invalid referral code.' };
 
     return {
-      payload: { type, venueName, name, email, phone, location, capacity, notes, status: 'In Review' },
+      payload: { type, venueName, name, email, phone, location, capacity, notes, referrer, status: 'In Review' },
+    };
+  }
+
+  if (type === 'Staff') {
+    const name = str(data.name, 100);
+    const email = str(data.email, 254);
+    const phone = str(data.phone, 20);
+    const role = str(data.role, 150);
+    const availability = str(data.availability, 200);
+    const experience = str(data.experience, 300);
+    const location = str(data.location, 100);
+    const notes = str(data.notes, 1000);
+
+    if (name.length < 2) return { error: 'Name is required (min 2 characters).' };
+    if (!validEmail(email)) return { error: 'Valid email is required.' };
+    if (phone.length < 5) return { error: 'Valid phone number is required.' };
+
+    return {
+      payload: { type, name, email, phone, role, availability, experience, location, notes, status: 'New' },
+    };
+  }
+
+  if (type === 'Sponsor') {
+    const company = str(data.businessName, 150);
+    const name = str(data.name, 100);
+    const email = str(data.email, 254);
+    const phone = str(data.phone, 20);
+    const tier = str(data.tier, 100);
+    const budget = str(data.budget, 100);
+    const website = str(data.website, 200);
+    const notes = str(data.notes, 1000);
+
+    if (company.length < 2) return { error: 'Company name is required.' };
+    if (!validEmail(email)) return { error: 'Valid email is required.' };
+    if (tier && !ALLOWED_SPONSOR_TIERS.includes(tier)) return { error: 'Invalid sponsor tier.' };
+
+    return {
+      payload: { type, company, name, email, phone, tier, budget, website, notes, status: 'New' },
+    };
+  }
+
+  if (type === 'Promoter') {
+    const name = str(data.name, 100);
+    const email = str(data.email, 254);
+    const phone = str(data.phone, 20);
+    const instagram = str(data.instagram, 100);
+    const tier = str((data.tier || 'B').toUpperCase(), 10);
+    const payoutMethod = str(data.payoutMethod || 'paypal', 30);
+    const notes = str(data.notes, 500);
+
+    if (name.length < 2) return { error: 'Name is required.' };
+    if (!validEmail(email)) return { error: 'Valid email is required.' };
+    if (!ALLOWED_PROMOTER_TIERS.includes(tier)) return { error: 'Invalid promoter tier.' };
+    if (!ALLOWED_PAYOUT_METHODS.includes(payoutMethod)) return { error: 'Invalid payout method.' };
+
+    return {
+      payload: { type, name, email, phone, instagram, tier, payoutMethod, notes, status: 'Pending' },
+    };
+  }
+
+  if (type === 'VendorAgreement') {
+    const name = str(data.name, 100);
+    const email = str(data.email, 254);
+    const businessName = str(data.businessName, 150);
+    const signature = str(data.signature, 120);
+    const version = str(data.version || '1.0', 30);
+
+    if (name.length < 2) return { error: 'Name is required.' };
+    if (!validEmail(email)) return { error: 'Valid email is required.' };
+    if (businessName.length < 2) return { error: 'Business name is required.' };
+    if (signature.length < 2) return { error: 'Signature is required.' };
+
+    return {
+      payload: { type, name, email, businessName, signature, version, status: 'Signed' },
     };
   }
 

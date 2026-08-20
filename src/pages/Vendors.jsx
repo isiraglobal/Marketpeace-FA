@@ -14,6 +14,7 @@ export default function Vendors() {
     email: '',
     instagram: '',
     category: '',
+    referrer: '',
   });
 
   const [status, setStatus] = useState({ submitting: false, success: false, error: null });
@@ -21,11 +22,18 @@ export default function Vendors() {
 
   // Booth interest form (replaces "→ /contact" dead-end)
   const [boothOpen, setBoothOpen] = useState(false);
-  const [boothData, setBoothData] = useState({ name: '', businessName: '', email: '', tier: 'Standard', message: '' });
+  const [boothData, setBoothData] = useState({ name: '', businessName: '', email: '', tier: 'Standard', event: '', referrer: '', message: '' });
   const [boothStatus, setBoothStatus] = useState({ submitting: false, success: false, error: null });
+  const [boothLoading, setBoothLoading] = useState(false);
 
   useEffect(() => {
     document.title = "MARKETPEACE | Join as a Vendor";
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setFormData(f => ({ ...f, referrer: ref }));
+      setBoothData(b => ({ ...b, referrer: ref }));
+    }
   }, []);
 
   const handleChange = (e) => {
@@ -46,6 +54,7 @@ export default function Vendors() {
         instagram: formData.instagram,
         category: formData.category,
         tier: 'Free', // Free profile — no AI offer pipeline triggered
+        referrer: formData.referrer,
       });
 
       setStatus({ submitting: false, success: true, error: null });
@@ -63,11 +72,48 @@ export default function Vendors() {
         name: formData.name,
         email: formData.email,
         tier: 'GetInvolved',
+        referrerCode: formData.referrer || undefined,
       });
       window.location.href = url;
     } catch (err) {
       setStatus({ ...status, error: err.message || 'Could not start checkout.' });
       setUpsellLoading(false);
+    }
+  };
+
+  // HIGH-TICKET BOOTH: instant $100 deposit checkout (server sets the price)
+  const handleBoothDeposit = async () => {
+    setBoothLoading(true);
+    setBoothStatus({ submitting: false, success: false, error: null });
+    try {
+      // 1) Create the vendor row first so the TID is linked for the webhook
+      const { transactionID } = await submitForm({
+        type: 'Vendor',
+        name: boothData.name,
+        businessName: boothData.businessName,
+        email: boothData.email,
+        instagram: '',
+        category: 'General',
+        tier: boothData.tier,
+        event: boothData.event,
+        referrer: boothData.referrer,
+        message: boothData.message,
+        paymentMethod: 'stripe',
+      });
+      // 2) Open Stripe Checkout for the $100 non-refundable deposit
+      const { url } = await fetchCheckoutSession({
+        type: 'Vendor',
+        name: boothData.name,
+        email: boothData.email,
+        tier: boothData.tier,
+        event: boothData.event,
+        referrerCode: boothData.referrer || undefined,
+        transactionID,
+      });
+      window.location.href = url;
+    } catch (err) {
+      setBoothLoading(false);
+      setBoothStatus({ submitting: false, success: false, error: err.message || 'Could not start checkout.' });
     }
   };
 
@@ -228,6 +274,11 @@ export default function Vendors() {
                 </div>
               </div>
 
+              <div>
+                <label htmlFor="vendor-referrer" className="sr-only">Referral Code (optional)</label>
+                <input id="vendor-referrer" name="referrer" type="text" value={formData.referrer} onChange={handleChange} placeholder="Referral Code (optional, e.g. MP-JOHN-G7K)" className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 font-light backdrop-blur-md text-sm" />
+              </div>
+
               <div className="flex items-start gap-4 mt-2">
                 <input type="checkbox" required id="terms" className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5" />
                 <label htmlFor="terms" className="text-[10px] md:text-[11px] text-white/40 leading-relaxed font-light">
@@ -315,6 +366,8 @@ export default function Vendors() {
                       instagram: '',
                       category: 'General',
                       tier: boothData.tier,
+                      event: boothData.event,
+                      referrer: boothData.referrer,
                       message: boothData.message,
                     });
                     setBoothStatus({ submitting: false, success: true, error: null });
@@ -335,7 +388,7 @@ export default function Vendors() {
                     <Input id="booth-business" placeholder="Brand Name" value={boothData.businessName} onChange={e => setBoothData({ ...boothData, businessName: e.target.value })} />
                   </div>
                 </div>
-<div>
+                <div>
                     <label htmlFor="booth-email" className="sr-only">Email Address</label>
                     <Input id="booth-email" type="email" placeholder="Email Address" value={boothData.email} onChange={e => setBoothData({ ...boothData, email: e.target.value })} />
                   </div>
@@ -347,9 +400,29 @@ export default function Vendors() {
                     onChange={e => setBoothData({ ...boothData, tier: e.target.value })}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white/70 outline-none focus:border-[#0DB8D3] transition-all appearance-none text-sm backdrop-blur-md"
                   >
-                    <option value="Standard" className="bg-[#193546]">Standard Booth — from $250</option>
-                    <option value="Flagship" className="bg-[#193546]">Flagship Booth — from $500</option>
+                    <option value="Standard" className="bg-[#193546]">Standard Booth — $250 total ($100 deposit)</option>
+                    <option value="Flagship" className="bg-[#193546]">Flagship Booth — $500 total ($100 deposit)</option>
                   </select>
+                </div>
+                <div>
+                  <label htmlFor="booth-event" className="sr-only">Which market</label>
+                  <input
+                    id="booth-event"
+                    placeholder="Market / City (e.g. NYC Spring Market)"
+                    value={boothData.event}
+                    onChange={e => setBoothData({ ...boothData, event: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 font-light backdrop-blur-md text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="booth-referrer" className="sr-only">Referral Code (optional)</label>
+                  <input
+                    id="booth-referrer"
+                    placeholder="Referral Code (optional, e.g. MP-JOHN-G7K)"
+                    value={boothData.referrer}
+                    onChange={e => setBoothData({ ...boothData, referrer: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white outline-none focus:border-[#0DB8D3] transition-all placeholder:text-white/20 font-light backdrop-blur-md text-sm"
+                  />
                 </div>
                 <div>
                   <label htmlFor="booth-message" className="sr-only">Tell us about your brand</label>
@@ -365,9 +438,18 @@ export default function Vendors() {
                 <button
                   type="submit"
                   disabled={boothStatus.submitting}
-                  className="w-full py-4 bg-[#0DB8D3] text-white font-black rounded-xl tracking-[0.2em] text-[11px] uppercase hover:bg-[#0bc1dd] transition-all shadow-lg disabled:opacity-50 btn-glow"
+                  className="w-full py-4 bg-white/5 border border-white/10 text-white/70 font-black rounded-xl tracking-[0.2em] text-[11px] uppercase hover:bg-white/10 transition-all disabled:opacity-50"
                 >
-                  {boothStatus.submitting ? 'SENDING...' : 'SUBMIT REQUEST'}
+                  {boothStatus.submitting ? 'SENDING...' : 'REQUEST CUSTOM OFFER'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBoothDeposit}
+                  disabled={boothLoading || boothStatus.submitting}
+                  className="w-full py-4 bg-[#0DB8D3] text-white font-black rounded-xl tracking-[0.2em] text-[11px] uppercase hover:bg-[#0bc1dd] transition-all shadow-lg disabled:opacity-50 btn-glow flex items-center justify-center gap-2"
+                >
+                  <Crown className="w-4 h-4" />
+                  {boothLoading ? 'OPENING CHECKOUT...' : 'LOCK MY BOOTH — $100 DEPOSIT'}
                 </button>
               </form>
             </div>

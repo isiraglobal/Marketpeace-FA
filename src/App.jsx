@@ -22,6 +22,10 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Success = lazy(() => import('./pages/Success'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Admin = lazy(() => import('./pages/Admin'));
+const Refer = lazy(() => import('./pages/Refer'));
+const Staff = lazy(() => import('./pages/Staff'));
+const Sponsors = lazy(() => import('./pages/Sponsors'));
+const Agreement = lazy(() => import('./pages/Agreement'));
 
 function ScrollSetup() {
   const { pathname } = useLocation();
@@ -114,6 +118,10 @@ export default function App() {
               <Route path="/terms" element={<Terms />} />
               <Route path="/success" element={<Success />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/refer" element={<Refer />} />
+              <Route path="/staff" element={<Staff />} />
+              <Route path="/sponsors" element={<Sponsors />} />
+              <Route path="/agreement" element={<Agreement />} />
               <Route path="/admin" element={<ErrorBoundary><Admin /></ErrorBoundary>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

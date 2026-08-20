@@ -23,12 +23,13 @@ export default function Terms() {
           <section>
             <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">1. Vendor Participation and Fees</h2>
             <p>
-              Participation in the Foreign Affairs Market Pop-Up requires a total investment of $150 per booth.
+              Participation in the Marketpeace pop-up market requires a total investment of $250 (Standard booth) or $500 (Flagship booth).
             </p>
             <ul className="list-disc pl-6 mt-4 space-y-4">
-              <li>A $75 non-refundable deposit is required to secure your spot.</li>
-              <li>The remaining $75 balance must be paid in full at least 7 days before the scheduled event.</li>
-              <li>Failure to pay the balance on time may result in the forfeiture of your spot and deposit.</li>
+              <li>A $100 non-refundable deposit is required to lock your booth spot.</li>
+              <li>The remaining balance ($150 Standard / $400 Flagship) must be paid within the balance window communicated in your offer email.</li>
+              <li>Once a market reaches 70% capacity, remaining balances are due within 48 hours to secure your spot.</li>
+              <li>Failure to pay the balance on time may result in placement on the waiting list or forfeiture of the spot and deposit.</li>
             </ul>
           </section>
 
@@ -63,16 +64,30 @@ export default function Terms() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">5. Liability and Insurance</h2>
+            <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">5. Reserved Booths</h2>
             <p>
-              Foreign Affairs LLC maintains a $1M liability insurance policy for all curated events. However, vendors are encouraged to carry their own business insurance. Foreign Affairs LLC is not responsible for any theft, damage, or loss of vendor property.
+              Deposits paid mean the booth is reserved. At 70% capacity, unpaid vendors receive final notification and have 48 hours to pay their balance. Vendors who do not complete payment are moved to the waiting list and may be replaced.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">6. Code of Conduct</h2>
+            <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">6. Liability and Insurance</h2>
             <p>
-              We pride ourselves on a high-energy, community-focused environment. Vendors are expected to maintain a professional demeanor, respect fellow creators, and adhere to venue rules. Foreign Affairs LLC reserves the right to remove any participant who violates this code of conduct without a refund.
+              Marketpeace maintains liability insurance for all curated events. However, vendors are encouraged to carry their own business insurance. Marketpeace is not responsible for any theft, damage, or loss of vendor property.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">7. Code of Conduct</h2>
+            <p>
+              We pride ourselves on a high-energy, community-focused environment. Vendors are expected to maintain a professional demeanor, respect fellow creators, and adhere to venue rules. Marketpeace reserves the right to remove any participant who violates this code of conduct without a refund.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-white mb-6 uppercase italic title">8. Referrals</h2>
+            <p>
+              Referral rewards are contingent on the referred party completing payment. Rewards are issued via Venmo, PayPal or CashApp on a bi-weekly payout cycle. Fraudulent or abusive referrals are void at Marketpeace's discretion.
             </p>
           </section>
         </div>

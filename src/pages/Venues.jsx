@@ -143,7 +143,7 @@ function VenueCard({ venue, onClick }) {
 }
 
 export default function Venues() {
-  const [formData, setFormData] = useState({ venueName: '', name: '', email: '', phone: '', location: '', capacity: '', notes: '' });
+  const [formData, setFormData] = useState({ venueName: '', name: '', email: '', phone: '', location: '', capacity: '', notes: '', referrer: '' });
   const [formStatus, setFormStatus] = useState({ submitting: false, success: false });
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -170,13 +170,19 @@ export default function Venues() {
     return () => clearInterval(interval);
   }, [fetchVenues]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) setFormData(f => ({ ...f, referrer: ref }));
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormStatus({ submitting: true, success: false });
     try {
       await submitForm({ ...formData, type: 'Venue' });
       setFormStatus({ submitting: false, success: true });
-      setFormData({ venueName: '', name: '', email: '', phone: '', location: '', capacity: '', notes: '' });
+      setFormData({ venueName: '', name: '', email: '', phone: '', location: '', capacity: '', notes: '', referrer: '' });
     } catch (err) {
       setFormStatus({ submitting: false, success: false, error: err.message });
     }
@@ -241,6 +247,10 @@ export default function Venues() {
             <div>
               <label htmlFor="venue-location" className="sr-only">Location</label>
               <input id="venue-location" type="text" placeholder="Location (City/Address)" required className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] text-sm" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+            </div>
+            <div>
+              <label htmlFor="venue-referrer" className="sr-only">Referral Code (optional)</label>
+              <input id="venue-referrer" type="text" placeholder="Referral Code (optional, e.g. MP-JOHN-G7K)" className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 md:py-4 text-white outline-none focus:border-[#0DB8D3] text-sm" value={formData.referrer} onChange={e => setFormData({...formData, referrer: e.target.value})} />
             </div>
             <div>
               <label htmlFor="venue-notes" className="sr-only">Tell us about your space</label>

@@ -10,6 +10,13 @@
  * 4. Contacts    (Contact messages, Referral Network signups, Booth inquiries, City requests)
  * 5. Visitors    (Master Lead List: Popup leads, Newsletter subscribers & ALL incoming leads)
  * 6. Cities      (Expansion nodes readable by the public site + edited by admin)
+ * 7. Referrers   (Referral network codes, payout method, lifetime totals)
+ * 8. Referrals   (Tracked referral events, rewards, payout status)
+ * 9. Promoters   (Street/promoter tiers S/A/B/C with commission rates)
+ * 10. Staff      (Event crew applications)
+ * 11. Sponsors   (Sponsor decks & partnerships)
+ * 12. Agreements (Signed vendor e-sign consents)
+ * 13. Events     (Event lineup, capacity, 70% finalization state)
  *
  * ─── ACTIONS ───
  *   submit            → write any form type (+ lead sync + email + Discord)
@@ -19,10 +26,16 @@
  *   updateCities      → admin city node editor (POST, auth via Vercel)
  *   cronProcessAIOffers  → AI offer generation + email + payment link (every ~10m)
  *   cronProcessFollowUps → nudge unpaid vendors with outstanding offers (every 6h)
+ *   cronCapacityCheck    → 70% capacity finalization + 48h balance window (hourly)
+ *   registerReferrer  → mint MP-XXXX-XXX referral code + welcome email
+ *   lookupReferrer    → validate a code at form time (rate-limited via Vercel)
+ *   listReferrals     → admin referral ledger (auth via Vercel)
+ *   payoutReferrals   → bi-weekly payout run, marks paid + milestone bonuses
+ *   getDash           → admin revenue/ops dashboard (auth via Vercel)
  *
  * ─── ONE-TIME SETUP ───
  * 1. Extensions → Apps Script, replace Code.gs with this file, save.
- * 2. In the function dropdown, select `setupSheets` and click Run (creates & formats the 5 form sheets + Cities).
+ * 2. In the function dropdown, select `setupSheets` and click Run (creates & formats all form sheets + Cities).
  * 3. Project Settings (gear icon) → Script Properties → Add:
  *    - DISCORD_WEBHOOK_URL: Your Discord Webhook URL (optional)
  *    - INTERNAL_SECRET: Ngl6yoAFUTTbXp3OdPvPUPaFzPlbsIR0HgXNv2AWHsE=
@@ -51,11 +64,11 @@ const SHEET_DEFS = [
       'Timestamp', 'TransactionID', 'Status', 'Name', 'BusinessName', 'Email', 'Phone', 'Instagram',
       'Category', 'ProfileType', 'Website', 'Tier', 'Amount', 'PaymentMethod', 'StripeSessionID',
       'ReceiptURL', 'Notes', 'LastUpdated', 'OfferAmount', 'OfferSubject', 'OfferBody',
-      'PaymentLinkURL', 'OfferSentAt', 'OfferStatus', 'FollowUpAt', 'FollowUpCount'
+      'PaymentLinkURL', 'OfferSentAt', 'OfferStatus', 'FollowUpAt', 'FollowUpCount', 'Event'
     ],
-    statuses: ['Free Profile', 'Pending', 'Offer Sent', 'Offer Follow-Up', 'Paid', 'Confirmed', 'Cancelled', 'Refunded'],
+    statuses: ['Free Profile', 'Pending', 'Deposit Pending', 'Offer Sent', 'Offer Follow-Up', 'Deposit Paid', 'Paid', 'Confirmed', 'Waiting List', 'Cancelled', 'Refunded'],
     color: '#0DB8D3',
-    widths: [180, 140, 120, 160, 200, 200, 140, 160, 160, 120, 200, 100, 80, 120, 200, 200, 300, 180, 100, 250, 320, 220, 180, 120, 180, 120],
+    widths: [180, 140, 120, 160, 200, 200, 140, 160, 160, 120, 200, 100, 80, 120, 200, 200, 300, 180, 100, 250, 320, 220, 180, 120, 180, 120, 160],
   },
   {
     name: 'Attendees',
@@ -91,6 +104,55 @@ const SHEET_DEFS = [
     statuses: ['Active', 'Planned', 'Completed', 'Cancelled'],
     color: '#1B7FDC',
     widths: [220, 120, 160, 180],
+  },
+  {
+    name: 'Referrers',
+    headers: ['Timestamp', 'Name', 'Email', 'Phone', 'ReferrerCode', 'Platform', 'PayoutMethod', 'Type', 'Status', 'TotalReferrals', 'TotalCash', 'TotalCredit', 'LastUpdated'],
+    statuses: ['Active', 'Suspended'],
+    color: '#0DB8D3',
+    widths: [180, 160, 220, 140, 150, 120, 120, 110, 100, 110, 100, 100, 180],
+  },
+  {
+    name: 'Referrals',
+    headers: ['Timestamp', 'ReferrerCode', 'ReferrerName', 'ReferrerEmail', 'ReferredType', 'ReferredName', 'ReferredBusiness', 'ReferredTID', 'Status', 'CashReward', 'CreditReward', 'PayoutStatus', 'PayoutMethod', 'PayoutDate', 'VerifiedAt', 'LastUpdated'],
+    statuses: ['Pending', 'Verified', 'Deposit Paid', 'Disputed', 'Fraud'],
+    color: '#16a34a',
+    widths: [180, 140, 160, 220, 120, 160, 200, 160, 130, 100, 100, 120, 120, 140, 160, 180],
+  },
+  {
+    name: 'Promoters',
+    headers: ['Timestamp', 'Name', 'Email', 'Phone', 'Instagram', 'Tier', 'Commission', 'PayoutMethod', 'Status', 'Notes', 'LastUpdated'],
+    statuses: ['Active', 'Pending', 'Suspended'],
+    color: '#e67e22',
+    widths: [180, 160, 220, 140, 160, 80, 100, 120, 100, 300, 180],
+  },
+  {
+    name: 'Staff',
+    headers: ['Timestamp', 'TransactionID', 'Status', 'Name', 'Email', 'Phone', 'Role', 'Availability', 'Experience', 'Location', 'Notes', 'LastUpdated'],
+    statuses: ['New', 'Screened', 'Hired', 'Onboarded', 'Declined', 'Archived'],
+    color: '#1B7FDC',
+    widths: [180, 140, 100, 160, 220, 140, 180, 140, 160, 140, 300, 180],
+  },
+  {
+    name: 'Sponsors',
+    headers: ['Timestamp', 'Status', 'Company', 'ContactName', 'Email', 'Phone', 'Tier', 'Budget', 'Website', 'Notes', 'LastUpdated'],
+    statuses: ['New', 'Contacted', 'Proposal Sent', 'Closed', 'Declined'],
+    color: '#9b59b6',
+    widths: [180, 100, 200, 160, 220, 140, 120, 100, 200, 300, 180],
+  },
+  {
+    name: 'Agreements',
+    headers: ['Timestamp', 'TransactionID', 'Type', 'Name', 'Email', 'BusinessName', 'SignedAt', 'Signature', 'AgreementVersion', 'LastUpdated'],
+    statuses: ['Signed', 'Awaiting', 'Expired'],
+    color: '#00a86b',
+    widths: [180, 140, 120, 160, 220, 200, 180, 160, 140, 180],
+  },
+  {
+    name: 'Events',
+    headers: ['Timestamp', 'EventName', 'City', 'Venue', 'EventDate', 'Capacity', 'SoldCount', 'NotifiedAt', 'BalanceDueAt', 'Status', 'LastUpdated'],
+    statuses: ['Scheduled', 'Active', 'Completed', 'Cancelled'],
+    color: '#0DB8D3',
+    widths: [180, 220, 140, 220, 140, 100, 100, 180, 180, 100, 180],
   },
 ];
 
@@ -164,7 +226,7 @@ function setupSheets() {
   const firstSheet = ss.getSheetByName('Vendors');
   if (firstSheet) ss.setActiveSheet(firstSheet);
   SpreadsheetApp.flush();
-  Logger.log('🎉 Setup complete! All 5 form sheets are configured.');
+  Logger.log('🎉 Setup complete! All form sheets are configured.');
 }
 
 /* ═══════════════════════════════════════════
@@ -313,7 +375,87 @@ function doPost(e) {
       case 'health':
         return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID, sheets: ss.getSheets().map(s => s.getName()) });
 
-      default:
+      case 'registerReferrer':
+        return handleRegisterReferrer(ss, data);
+
+      case 'lookupReferrer':
+        return handleLookupReferrer(ss, data);
+
+      case 'listReferrals':
+        return handleListReferrals(ss);
+
+      case 'payoutReferrals':
+        return handlePayoutReferrals(ss, data);
+
+      case 'getDash':
+        return handleGetDash(ss);
+
+      case 'cronCapacityCheck':
+        return handleCronCapacityCheck(ss);
+
+case 'STAFF':
+      return [
+        ts,
+        tid,
+        s(data.status || 'New', 50),
+        s(data.name, 100),
+        s(data.email, 254).toLowerCase(),
+        s(data.phone, 20),
+        s(data.role || 'General Crew', 150),
+        s(data.availability, 200),
+        s(data.experience, 300),
+        s(data.location, 100),
+        s(data.notes, 1000),
+        ts
+      ];
+
+    case 'SPONSOR':
+      return [
+        ts,
+        s(data.status || 'New', 50),
+        s(data.company || data.businessName, 150),
+        s(data.name, 100),
+        s(data.email, 254).toLowerCase(),
+        s(data.phone, 20),
+        s(data.tier || 'Supporting', 100),
+        s(data.budget, 100),
+        s(data.website, 200),
+        s(data.notes, 1000),
+        ts
+      ];
+
+    case 'PROMOTER':
+      const promoterTier = String(data.tier || 'B').toUpperCase();
+      const CommissionRate = { S: '20%', A: '15%', B: '10%', C: '5%' }[promoterTier] || '10%';
+      return [
+        ts,
+        s(data.name, 100),
+        s(data.email, 254).toLowerCase(),
+        s(data.phone, 20),
+        s(data.instagram, 100),
+        promoterTier,
+        CommissionRate,
+        s(data.payoutMethod || 'paypal', 30),
+        s(data.status || 'Pending', 30),
+        s(data.notes, 500),
+        ts
+      ];
+
+    case 'VENDORAGREEMENT':
+      return [
+        ts,
+        tid,
+        'Signed',
+        s(data.name, 100),
+        s(data.email, 254).toLowerCase(),
+        s(data.businessName, 150),
+        nowISO(),
+        s(data.signature || data.name, 120),
+        s(data.version || '1.0', 30),
+        ts
+      ];
+
+    default:
         return respond({ error: 'Unknown action: ' + data.action });
     }
   } catch (err) {
@@ -350,6 +492,10 @@ function handleSubmit(ss, data) {
     VISITOR: 'Visitors',
     CITYREQUEST: 'Contacts', // Store CityRequests in Contacts tab
     NEWSLETTER: 'Visitors',  // Store Newsletters directly in Visitors tab
+    STAFF: 'Staff',
+    SPONSOR: 'Sponsors',
+    PROMOTER: 'Promoters',
+    VENDORAGREEMENT: 'Agreements', // Signed vendor agreement consent
   };
 
   const sheetName = map[typeUpper];
@@ -362,6 +508,18 @@ function handleSubmit(ss, data) {
   const row = buildRow(typeUpper, data, tid);
   sheet.appendRow(row);
   SpreadsheetApp.flush(); // Guaranteed instant write to sheet!
+
+  // ─── REFERRAL TRACKING (auto-record when a valid referrer code is supplied) ───
+  const refCode = sanitize(data.referrer || '', 50).trim();
+  if (refCode && /^MP[-_][A-Z0-9]{2,4}/i.test(refCode)) {
+    recordReferralIfValid(ss, {
+      code: refCode,
+      referredType: typeUpper,
+      referredName: sanitize(data.name || '', 100),
+      referredBusiness: sanitize(data.businessName || data.venueName || '', 150),
+      referredTID: tid,
+    });
+  }
 
   // ─── MASTER AUDIENCE SYNC (Stores all leads in Visitors) ───
   syncLeadToVisitors(ss, data);
@@ -505,7 +663,25 @@ function handleUpdateStatus(ss, data) {
 
   SpreadsheetApp.flush();
 
-  const paid = data.status === 'Paid' || data.status === 'Confirmed';
+  // ─── REFERRAL LOCK: a completed payment makes the linked referral payable ───
+  if (data.status === 'Paid' || data.status === 'Confirmed' || data.status === 'Deposit Paid') {
+    markReferralPayable(ss, tid);
+  }
+
+  // Vendor-specific extras from Stripe metadata
+  if (name === 'Vendors' && colMap['Event'] && data.event) {
+    sheet.getRange(rowIdx, colMap['Event']).setValue(sanitize(data.event, 100));
+  }
+  if (name === 'Vendors' && colMap['BusinessName'] && data.businessName) {
+    sheet.getRange(rowIdx, colMap['BusinessName']).setValue(sanitize(data.businessName, 150));
+  }
+  if (name === 'Vendors' && colMap['Amount'] && data.ticketType) {
+    // ticketType carries the resolved tier on vendor deposits
+    sheet.getRange(rowIdx, colMap['Tier']).setValue(sanitize(data.ticketType, 20));
+  }
+  SpreadsheetApp.flush();
+
+  const paid = data.status === 'Paid' || data.status === 'Confirmed' || data.status === 'Deposit Paid';
   notifyDiscord(paid ? '💰 Payment Received' : '🔄 Status Update',
     `**Type:** ${data.type}\n**ID:** ${tid.slice(0, 8)}***\n**Status:** ${data.status}`,
     paid ? 3066993 : 15105570);
@@ -514,7 +690,547 @@ function handleUpdateStatus(ss, data) {
 }
 
 /* ═══════════════════════════════════════════
-   ROW BUILDER (Matches 5 Form Sheets)
+   REFERRAL SYSTEM (Register / Lookup / Track / Payout)
+   ═══════════════════════════════════════════ */
+
+const ROOT_URL = PROPS.getProperty('ROOT_URL') || 'https://marketpeace.isira.club';
+
+/**
+ * Validates a referrer code, and if valid appends a referral Pending row.
+ * Called automatically from handleSubmit for any applicable form type.
+ */
+function recordReferralIfValid(ss, ref) {
+  if (!ref || !ref.code) return false;
+  const referrers = ss.getSheetByName('Referrers');
+  if (!referrers) return false;
+  const rows = referrers.getDataRange().getValues();
+  const code = String(ref.code).trim().toUpperCase();
+  let referrer = null;
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][4] || '').trim().toUpperCase() === code) {
+      referrer = { name: String(rows[i][1] || ''), email: String(rows[i][2] || '') };
+      break;
+    }
+  }
+  if (!referrer) return false;
+
+  const sheet = ensureSheet(ss, 'Referrals');
+  const refers = sheet.getDataRange().getValues();
+  // Duplicate guard: same referrer + same referred TID must not double-record
+  for (let i = 1; i < refers.length; i++) {
+    if (String(refers[i][1] || '').trim().toUpperCase() === code && String(refers[i][7] || '') === ref.referredTID) return false;
+  }
+
+  sheet.appendRow([
+    nowISO(), code, referrer.name, referrer.email,
+    ref.referredType, ref.referredName, ref.referredBusiness || '',
+    ref.referredTID, 'Pending', 0, 0, 'Pending', '', '', '', nowISO(),
+  ]);
+  SpreadsheetApp.flush();
+  notifyDiscord('🤝 New Referral Recorded',
+    `**Referrer Code:** ${code}\n**Referred Type:** ${ref.referredType}\n**Referred:** ${ref.referredName}${ref.referredBusiness ? ' / ' + ref.referredBusiness : ''}`,
+    3447003);
+  return true;
+}
+
+/**
+ * Marks a referral payable once the referred party has paid.
+ * Called from handleUpdateStatus on Paid/Confirmed.
+ */
+function markReferralPayable(ss, tid) {
+  const sheet = ss.getSheetByName('Referrals');
+  if (!sheet || !tid) return;
+  const rows = sheet.getDataRange().getValues();
+  const colMap = getColMap(sheet);
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][7] || '') === String(tid)) {
+      const status = colMap['Status'];
+      const payout = colMap['PayoutStatus'];
+      const verifiedAt = colMap['VerifiedAt'];
+      if (status) sheet.getRange(i + 1, status).setValue('Deposit Paid');
+      if (payout) sheet.getRange(i + 1, payout).setValue('Pending');
+      if (verifiedAt) sheet.getRange(i + 1, verifiedAt).setValue(nowISO());
+      SpreadsheetApp.flush();
+      break;
+    }
+  }
+}
+
+/* ─── Action: registerReferrer ─── */
+function handleRegisterReferrer(ss, data) {
+  const name = sanitize(data.name, 100);
+  const email = sanitize(data.email, 254).toLowerCase();
+  const phone = sanitize(data.phone, 30);
+  const payoutMethod = sanitize(data.payoutMethod || 'paypal', 30);
+  const platform = sanitize(data.platform || 'website', 50);
+  const type = sanitize(data.type || 'referrer', 50);
+
+  if (name.length < 2) return respond({ error: 'Name is required (min 2 characters).' });
+  if (!email.includes('@')) return respond({ error: 'Valid email is required.' });
+
+  const sheet = ensureSheet(ss, 'Referrers');
+  const rows = sheet.getDataRange().getValues();
+
+  // If they already have a code, return it instead of generating a new one
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][2] || '').trim().toLowerCase() === email) {
+      const existingCode = String(rows[i][4] || '').trim();
+      if (existingCode) {
+        return respond({ success: true, existing: true, code: existingCode, shareLink: ROOT_URL + '/vendors?ref=' + existingCode });
+      }
+    }
+  }
+
+  // Generate a unique MP-XXXX-XXX code
+  const used = new Set(rows.slice(1).map(r => String(r[4] || '').trim().toUpperCase()));
+  const slug = name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4) || 'USER';
+  const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  let attempts = 0;
+  do {
+    let rand = '';
+    for (let i = 0; i < 3; i++) rand += ALPHA[Math.floor(Math.random() * ALPHA.length)];
+    code = 'MP-' + slug + '-' + rand;
+    attempts++;
+  } while (used.has(code) && attempts < 25);
+
+  sheet.appendRow([nowISO(), name, email, phone, code, platform, payoutMethod, type, 'Active', 0, 0, 0, nowISO()]);
+  SpreadsheetApp.flush();
+
+  syncLeadToVisitors(ss, { email, name, phone, type: 'Referral', source: 'Referral' });
+  sendReferralWelcome(name, email, code);
+  notifyDiscord('🎁 New Referrer Registered',
+    `**Name:** ${name}\n**Code:** ${code}\n**Method:** ${payoutMethod}`,
+    3066993);
+
+  return respond({ success: true, existing: false, code, shareLink: ROOT_URL + '/vendors?ref=' + code });
+}
+
+/* ─── Action: lookupReferrer ─── */
+function handleLookupReferrer(ss, data) {
+  const code = sanitize(data.code, 50).trim().toUpperCase();
+  if (!code) return respond({ error: 'Missing code' });
+  const sheet = ss.getSheetByName('Referrers');
+  if (!sheet) return respond({ found: false });
+
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][4] || '').trim().toUpperCase() === code) {
+      return respond({
+        found: true,
+        code,
+        name: String(rows[i][1] || ''),
+        totalReferrals: Number(rows[i][9]) || 0,
+        totalCash: Number(rows[i][10]) || 0,
+        totalCredit: Number(rows[i][11]) || 0,
+      });
+    }
+  }
+  return respond({ found: false });
+}
+
+/* ─── Action: listReferrals (admin) ─── */
+function handleListReferrals(ss) {
+  const sheet = ss.getSheetByName('Referrals');
+  const referrers = ss.getSheetByName('Referrers');
+  if (!sheet) return respond([]);
+
+  const rows = sheet.getDataRange().getValues();
+  const colMap = getColMap(sheet);
+  const out = [];
+  const referrerMap = {};
+  if (referrers) {
+    referrers.getDataRange().getValues().slice(1).forEach(r => {
+      referrerMap[String(r[4] || '').trim().toUpperCase()] = {
+        name: String(r[1] || ''), email: String(r[2] || ''), method: String(r[6] || ''), type: String(r[7] || ''),
+      };
+    });
+  }
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (colMap['Ref'] || true) out.push({
+      timestamp: String(r[0] || ''),
+      referrerCode: String(r[1] || ''),
+      referrerName: String(r[2] || ''),
+      referrerEmail: String(r[3] || ''),
+      referredType: String(r[4] || ''),
+      referredName: String(r[5] || ''),
+      referredBusiness: String(r[6] || ''),
+      referredTID: String(r[7] || ''),
+      status: String(r[8] || ''),
+      cashReward: Number(r[9]) || 0,
+      creditReward: Number(r[10]) || 0,
+      payoutStatus: String(r[11] || ''),
+      payoutDate: String(r[13] || ''),
+    });
+  }
+  return respond({ entries: out.slice(-500).reverse(), referrers: referrerMap });
+}
+
+/* ─── Action: payoutReferrals (admin) ─── */
+const REFERRAL_REWARDS = {
+  VENDOR: { cash: 50, credit: 50 },
+  VENUE: { cash: 75, credit: 75 },
+  ATTENDEE: { cash: 25, credit: 25 },
+};
+
+function handlePayoutReferrals(ss, data) {
+  const sheet = ss.getSheetByName('Referrals');
+  if (!sheet) return respond({ error: 'Referrals sheet not found' });
+
+  const rows = sheet.getDataRange().getValues();
+  const colMap = getColMap(sheet);
+  const payoutMethod = sanitize(data.payoutMethod || 'paypal', 30);
+  const entries = [];
+  const byReferrer = {};
+
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const status = String(r[8] || '');
+    const payoutStatus = String(r[11] || '');
+    if (payoutStatus === 'Paid') continue;
+    if (status !== 'Deposit Paid' && status !== 'Verified') continue;
+
+    const referredType = String(r[4] || '').toUpperCase();
+    const reward = REFERRAL_REWARDS[referredType] || { cash: 0, credit: 0 };
+    const code = String(r[1] || '').trim().toUpperCase();
+    if (!code) continue;
+
+    // Write reward amounts + mark paid for this run
+    if (colMap['CashReward']) sheet.getRange(i + 1, colMap['CashReward']).setValue(reward.cash);
+    if (colMap['CreditReward']) sheet.getRange(i + 1, colMap['CreditReward']).setValue(reward.credit);
+    if (colMap['PayoutStatus']) sheet.getRange(i + 1, colMap['PayoutStatus']).setValue('Paid');
+    if (colMap['PayoutMethod']) sheet.getRange(i + 1, colMap['PayoutMethod']).setValue(payoutMethod);
+    if (colMap['PayoutDate']) sheet.getRange(i + 1, colMap['PayoutDate']).setValue(nowISO());
+
+    if (!byReferrer[code]) byReferrer[code] = { cash: 0, credit: 0, count: 0, types: {} };
+    byReferrer[code].cash += reward.cash;
+    byReferrer[code].credit += reward.credit;
+    byReferrer[code].count += 1;
+    byReferrer[code].types[referredType] = (byReferrer[code].types[referredType] || 0) + 1;
+
+    entries.push({
+      code,
+      referredType,
+      referredName: String(r[5] || ''),
+      referredBusiness: String(r[6] || ''),
+      cash: reward.cash,
+      credit: reward.credit,
+    });
+  }
+
+  // Apply milestone bonuses (3 vendors / 5 vendors / swarm 10 / venue chain 3)
+  Object.keys(byReferrer).forEach(code => {
+    const info = byReferrer[code];
+    const vendors = info.types['VENDOR'] || 0;
+    const venues = info.types['VENUE'] || 0;
+    if (vendors >= 3) info.cash += 50;
+    if (vendors >= 5) info.cash += 100;
+    if (vendors >= 10) info.cash += 100;
+    if (venues >= 3) info.cash += 75;
+  });
+
+  const summary = Object.keys(byReferrer).map(code => ({
+    code,
+    cash: byReferrer[code].cash,
+    credit: byReferrer[code].credit,
+    count: byReferrer[code].count,
+  }));
+
+  // Reflect bonus changes back into Referrers totals
+  const referrers = ss.getSheetByName('Referrers');
+  if (referrers) {
+    const rRows = referrers.getDataRange().getValues();
+    const rMap = getColMap(referrers);
+    for (let i = 1; i < rRows.length; i++) {
+      const code = String(rRows[i][4] || '').trim().toUpperCase();
+      if (!byReferrer[code]) continue;
+      const curReferrals = Number(rRows[i][9]) || 0;
+      if (rMap['TotalReferrals']) referrers.getRange(i + 1, rMap['TotalReferrals']).setValue(curReferrals + byReferrer[code].count);
+      if (rMap['TotalCash']) referrers.getRange(i + 1, rMap['TotalCash']).setValue(Number(rRows[i][10] || 0) + byReferrer[code].cash);
+      if (rMap['TotalCredit']) referrers.getRange(i + 1, rMap['TotalCredit']).setValue(Number(rRows[i][11] || 0) + byReferrer[code].credit);
+    }
+    SpreadsheetApp.flush();
+  }
+
+  const totalCash = summary.reduce((a, b) => a + b.cash, 0);
+  const totalCredit = summary.reduce((a, b) => a + b.credit, 0);
+  SpreadsheetApp.flush();
+
+  if (summary.length > 0) {
+    notifyDiscord('💸 Referral Payout Run', `**Referrers:** ${summary.length}\n**Cash:** $${totalCash}\n**Credit:** $${totalCredit}\n**Method:** ${payoutMethod}`, 15844367);
+  }
+
+  return respond({ success: true, payoutMethod, entries, summary, totalCash, totalCredit });
+}
+
+/* ═══════════════════════════════════════════
+   ADMIN DASHBOARD (getDash)
+   ═══════════════════════════════════════════ */
+
+function numberCell(defaultVal) {
+  if (typeof defaultVal !== 'number') defaultVal = 0;
+  return defaultVal;
+}
+
+function handleGetDash(ss) {
+  const dash = {
+    vendors: { total: 0, paid: 0, pending: 0, revenue: 0 },
+    attendees: { total: 0, paid: 0, revenue: 0 },
+    venues: { total: 0, approved: 0 },
+    referrals: { referrers: 0, pending: 0, payable: 0, cashOwed: 0 },
+    promoters: { active: 0 },
+    staff: 0,
+    sponsors: 0,
+    events: [],
+    updatedAt: nowISO(),
+  };
+
+  const vendorSheet = ss.getSheetByName('Vendors');
+  if (vendorSheet) {
+    const rows = vendorSheet.getDataRange().getValues();
+    const c = getColMap(vendorSheet);
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const status = String(c['Status'] ? r[c['Status'] - 1] || '' : '');
+      const amount = Number(c['Amount'] ? r[c['Amount'] - 1] || 0 : 0) || 0;
+      dash.vendors.total++;
+      if (status === 'Paid' || status === 'Confirmed' || status === 'Deposit Paid') {
+        dash.vendors.paid++;
+        dash.vendors.revenue += amount;
+      } else if (status === 'Pending' || status === 'Offer Sent' || status === 'Waiting List') {
+        dash.vendors.pending++;
+      }
+    }
+  }
+
+  const attendeeSheet = ss.getSheetByName('Attendees');
+  if (attendeeSheet) {
+    const rows = attendeeSheet.getDataRange().getValues();
+    const c = getColMap(attendeeSheet);
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const status = String(c['Status'] ? r[c['Status'] - 1] || '' : '');
+      const amount = Number(c['Amount'] ? r[c['Amount'] - 1] || 0 : 0) || 0;
+      dash.attendees.total++;
+      if (status === 'Paid' || status === 'Confirmed') {
+        dash.attendees.paid++;
+        dash.attendees.revenue += amount;
+      }
+    }
+  }
+
+  const venueSheet = ss.getSheetByName('Venues');
+  if (venueSheet) {
+    const rows = venueSheet.getDataRange().getValues();
+    const c = getColMap(venueSheet);
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const status = String(c['Status'] ? r[c['Status'] - 1] || '' : '');
+      dash.venues.total++;
+      if (status === 'Approved' || status === 'Active') dash.venues.approved++;
+    }
+  }
+
+  const refSheet = ss.getSheetByName('Referrals');
+  if (refSheet) {
+    const rows = refSheet.getDataRange().getValues();
+    const c = getColMap(refSheet);
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const status = String(c['Status'] ? r[c['Status'] - 1] || '' : '');
+      const payout = String(c['PayoutStatus'] ? r[c['PayoutStatus'] - 1] || '' : '');
+      if (payout !== 'Paid' && (status === 'Pending')) dash.referrals.pending++;
+      if (payout !== 'Paid' && (status === 'Deposit Paid' || status === 'Verified')) {
+        dash.referrals.payable++;
+        dash.referrals.cashOwed += (Number(c['CashReward'] ? r[c['CashReward'] - 1] || 0 : 0) || 0);
+      }
+    }
+  }
+
+  const referrerSheet = ss.getSheetByName('Referrers');
+  if (referrerSheet) dash.referrals.referrers = Math.max(0, referrerSheet.getLastRow() - 1);
+
+  const promoterSheet = ss.getSheetByName('Promoters');
+  if (promoterSheet) {
+    const rows = promoterSheet.getDataRange().getValues();
+    const c = getColMap(promoterSheet);
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (String(c['Status'] ? r[c['Status'] - 1] || '' : '') === 'Active') dash.promoters.active++;
+    }
+  }
+
+  const staffSheet = ss.getSheetByName('Staff');
+  if (staffSheet) dash.staff = Math.max(0, staffSheet.getLastRow() - 1);
+
+  const sponsorSheet = ss.getSheetByName('Sponsors');
+  if (sponsorSheet) dash.sponsors = Math.max(0, sponsorSheet.getLastRow() - 1);
+
+  const eventSheet = ss.getSheetByName('Events');
+  if (eventSheet) {
+    const rows = eventSheet.getDataRange().getValues();
+    const c = getColMap(eventSheet);
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const name = String(c['EventName'] ? r[c['EventName'] - 1] || '' : '');
+      if (!name) continue;
+      dash.events.push({
+        name,
+        city: String(c['City'] ? r[c['City'] - 1] || '' : ''),
+        venue: String(c['Venue'] ? r[c['Venue'] - 1] || '' : ''),
+        date: String(c['EventDate'] ? r[c['EventDate'] - 1] || '' : ''),
+        capacity: Number(c['Capacity'] ? r[c['Capacity'] - 1] || 0 : 0) || 0,
+        status: String(c['Status'] ? r[c['Status'] - 1] || '' : ''),
+      });
+    }
+  }
+
+  return respond(dash);
+}
+
+/* ═══════════════════════════════════════════
+   CRON: 70% CAPACITY FINALIZATION
+   ═══════════════════════════════════════════ */
+
+function cronCapacityCheck() {
+  const ss = getSS();
+  Logger.log('Capacity cron result: ' + JSON.stringify(handleCronCapacityCheck(ss)));
+}
+
+function handleCronCapacityCheck(ss) {
+  const eventSheet = ss.getSheetByName('Events');
+  const vendorSheet = ss.getSheetByName('Vendors');
+  if (!eventSheet || !vendorSheet) return respond({ events: 0, notified: 0 });
+
+  const events = eventSheet.getDataRange().getValues();
+  const eMap = getColMap(eventSheet);
+  const vendors = vendorSheet.getDataRange().getValues();
+  const vMap = getColMap(vendorSheet);
+  let notified = 0;
+  const DONE = ['Completed', 'Cancelled'];
+
+  for (let i = 1; i < events.length; i++) {
+    const r = events[i];
+    const evName = sanitize(String(eMap['EventName'] ? r[eMap['EventName'] - 1] || '' : ''), 200);
+    const capacity = Number(eMap['Capacity'] ? r[eMap['Capacity'] - 1] || 0 : 0) || 0;
+    const notifiedRaw = String(eMap['NotifiedAt'] ? r[eMap['NotifiedAt'] - 1] || '' : '').trim();
+    const evStatus = String(eMap['Status'] ? r[eMap['Status'] - 1] || '' : '').trim();
+    if (!evName || capacity <= 0 || notifiedRaw || DONE.indexOf(evStatus) !== -1) continue;
+
+    // Count committed vendors (paid)
+    const waiting = [];
+    const sold = vendors.slice(1).reduce((acc, vr) => {
+      const vEvent = String(vMap['Event'] ? vr[vMap['Event'] - 1] || '' : '').trim();
+      const vStatus = String(vMap['Status'] ? vr[vMap['Status'] - 1] || '' : '').trim();
+      if (vEvent !== evName) return acc;
+      if (vStatus === 'Paid' || vStatus === 'Confirmed' || vStatus === 'Deposit Paid') return acc + 1;
+      if (vStatus === 'Pending' || vStatus === 'Offer Sent' || vStatus === 'Offer Follow-Up' || vStatus === 'Waiting List') {
+        waiting.push({ row: vr, map: vMap });
+      }
+      return acc;
+    }, 0);
+
+    // 70% threshold reached
+    if (sold >= Math.ceil(capacity * 0.7)) {
+      waiting.forEach(w => {
+        const email = String(w.map['Email'] ? w.row[w.map['Email'] - 1] || '' : '').trim();
+        const name = String(w.map['Name'] ? w.row[w.map['Name'] - 1] || '' : '').trim();
+        const business = String(w.map['BusinessName'] ? w.row[w.map['BusinessName'] - 1] || '' : '').trim();
+        const link = String(w.map['PaymentLinkURL'] ? w.row[w.map['PaymentLinkURL'] - 1] || '' : '').trim();
+        if (email) sendFinalizeEmail({ name, business, email, event: evName, link });
+      });
+      notified++;
+      const rowIdx = i + 1;
+      if (eMap['NotifiedAt']) eventSheet.getRange(rowIdx, eMap['NotifiedAt']).setValue(nowISO());
+      if (eMap['SoldCount']) eventSheet.getRange(rowIdx, eMap['SoldCount']).setValue(sold);
+      if (eMap['Status']) eventSheet.getRange(rowIdx, eMap['Status']).setValue('Active');
+      SpreadsheetApp.flush();
+      notifyDiscord('🎟️ 70% Capacity Reached',
+        `**Event:** ${evName}\n**Sold:** ${sold}/${capacity}\n**Notified:** ${waiting.length} waiting-list vendors`, 15844367);
+    } else if (eMap['SoldCount']) {
+      eventSheet.getRange(i + 1, eMap['SoldCount']).setValue(sold);
+      SpreadsheetApp.flush();
+    }
+  }
+
+  return respond({ events: events.length, notified });
+}
+
+function sendFinalizeEmail(v) {
+  if (!v.email) return;
+  const htmlBody = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#0f1b24;font-family:Arial,Helvetica,sans-serif;">
+<div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <h1 style="color:#0DB8D3;font-size:28px;letter-spacing:8px;margin:0;">MARKETPEACE</h1>
+    <p style="color:#6b7280;font-size:11px;letter-spacing:3px;margin-top:8px;">THE INFRASTRUCTURE OF INDEPENDENCE</p>
+  </div>
+  <div style="background:#193546;border:1px solid rgba(13,184,211,0.2);border-radius:16px;padding:32px;">
+    <p style="color:#0DB8D3;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px 0;">Your Booth Is Ready to Lock In</p>
+    <h2 style="color:#ffffff;font-size:22px;margin:0 0 16px 0;">Hey ${sanitize(v.name, 50)},</h2>
+    <p style="color:#d1d5db;font-size:15px;line-height:1.6;margin:0 0 16px 0;">Great news — <strong style="color:#ffffff;">${sanitize(v.event, 100)}</strong> just reached 70% capacity. Your booth spot is being finalized. Pay your remaining balance within 48 hours to lock it in.</p>
+    ${v.link ? `<div style="text-align:center;margin-bottom:8px;">
+      <a href="${v.link}" style="display:inline-block;background:#0DB8D3;color:#0f1b24;text-decoration:none;font-weight:bold;font-size:14px;letter-spacing:2px;padding:16px 40px;border-radius:12px;">PAY BALANCE NOW</a>
+    </div>` : '<p style="color:#fbbf24;font-size:13px;">A payment link will be sent to you separately.</p>'}
+    <p style="color:#6b7280;font-size:11px;text-align:center;margin-top:16px;">Questions? foreignaffairsllc2017@gmail.com</p>
+  </div>
+</div></body></html>`;
+  try {
+    MailApp.sendEmail({
+      to: v.email,
+      subject: `${sanitize(v.name.split(' ')[0], 30)}, ${sanitize(v.event, 60)} just hit 70% capacity`,
+      body: `Hello ${v.name},\n\nGreat news — ${v.event} just reached 70% capacity. Your booth spot is being finalized. Pay your remaining balance within 48 hours to lock it in.\n\n${v.link ? 'Pay now: ' + v.link : 'A payment link will be sent separately.'}\n\nQuestions? foreignaffairsllc2017@gmail.com`,
+      name: 'MARKETPEACE',
+    });
+  } catch (e) {
+    console.error('Finalize email error:', e.toString());
+  }
+}
+
+function sendReferralWelcome(name, email, code) {
+  if (!email) return;
+  const shareURL = ROOT_URL + '/vendors?ref=' + code;
+  const htmlBody = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#0f1b24;font-family:Arial,Helvetica,sans-serif;">
+<div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+  <div style="text-align:center;margin-bottom:32px;">
+    <h1 style="color:#0DB8D3;font-size:28px;letter-spacing:8px;margin:0;">MARKETPEACE</h1>
+    <p style="color:#6b7280;font-size:11px;letter-spacing:3px;margin-top:8px;">THE INFRASTRUCTURE OF INDEPENDENCE</p>
+  </div>
+  <div style="background:#193546;border:1px solid rgba(13,184,211,0.2);border-radius:16px;padding:32px;">
+    <p style="color:#0DB8D3;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px 0;">Your Referral Code Is Live</p>
+    <h2 style="color:#ffffff;font-size:22px;margin:0 0 16px 0;">Welcome to Marketpeace, ${sanitize(name, 50)}</h2>
+    <p style="color:#d1d5db;font-size:15px;line-height:1.6;margin:0 0 16px 0;">
+      Share your code and earn cash + credit for every vendor, venue and attendee you bring in.
+    </p>
+    <div style="text-align:center;background:#0f1b24;border:1px solid rgba(13,184,211,0.4);border-radius:12px;padding:20px;margin-bottom:20px;">
+      <p style="color:#6b7280;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px 0;">Your Code</p>
+      <p style="color:#0DB8D3;font-size:32px;font-weight:bold;letter-spacing:4px;margin:0;">${code}</p>
+    </div>
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="${shareURL}" style="display:inline-block;background:#0DB8D3;color:#0f1b24;text-decoration:none;font-weight:bold;font-size:14px;letter-spacing:2px;padding:16px 40px;border-radius:12px;">COPY &amp; SHARE YOUR LINK</a>
+    </div>
+    <p style="color:#6b7280;font-size:11px;text-align:center;margin-top:16px;">Questions? foreignaffairsllc2017@gmail.com</p>
+  </div>
+</div></body></html>`;
+  try {
+    MailApp.sendEmail({
+      to: email,
+      subject: 'Your Marketpeace referral code is ready',
+      htmlBody,
+      body: `Welcome ${name}!\n\nYour referral code is: ${code}\n\nShare this link to earn cash + credit:\n${shareURL}\n\nQuestions? foreignaffairsllc2017@gmail.com`,
+      name: 'MARKETPEACE',
+    });
+  } catch (e) {
+    console.error('Referral welcome email error:', e.toString());
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ROW BUILDER (Matches Form Sheets)
    ═══════════════════════════════════════════ */
 function buildRow(type, data, tid) {
   const s = (v, m) => sanitize(v, m);
@@ -540,7 +1256,8 @@ function buildRow(type, data, tid) {
         s(data.paymentMethod || 'free', 20),
         '', '', '', ts,
         '', '', '', '', '', (isFree ? 'N/A' : 'Pending AI'),
-        '', '0'
+        '', '0',
+        s(data.event, 100)
       ];
 
     case 'ATTENDEE':
@@ -901,7 +1618,12 @@ function setupTriggers() {
     .everyHours(6)
     .create();
 
-  Logger.log('✅ Triggers created: cronProcessAIOffers (10m), cronProcessFollowUps (6h)');
+  ScriptApp.newTrigger('cronCapacityCheck')
+    .timeBased()
+    .everyHours(1)
+    .create();
+
+  Logger.log('✅ Triggers created: cronProcessAIOffers (10m), cronProcessFollowUps (6h), cronCapacityCheck (1h)');
 }
 
 /* ═══════════════════════════════════════════

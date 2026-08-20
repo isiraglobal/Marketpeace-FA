@@ -97,6 +97,10 @@ export default function Footer() {
           <Link to="/terms" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Terms</Link>
           <Link to="/contact" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Contact</Link>
           <Link to="/legal" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Legal</Link>
+          <Link to="/refer" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Refer & Earn</Link>
+          <Link to="/staff" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Work With Us</Link>
+          <Link to="/sponsors" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Sponsors</Link>
+          <Link to="/agreement" className="text-white/40 hover:text-[#0DB8D3] transition-colors text-[7px] sm:text-[9px] md:text-xs tracking-[0.1em] md:tracking-[0.3em] uppercase font-black">Vendor Agreement</Link>
         </div>
       </div>
 
