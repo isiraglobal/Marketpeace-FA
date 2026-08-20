@@ -18,7 +18,7 @@
  * 9. Triggers → Add Trigger → function: onEdit, event type: On change
  */
 
-const SHEET_ID = '1U4OAHwkntuIlcgWUbtAFJ2R0hBkyTqSJHtmmzsjEa1g';
+const SHEET_ID = '1O2cJqGK2qNAHA9mw2vC4szRtfLshfL0jjmrQicEok6I';
 const PROPS = PropertiesService.getScriptProperties();
 const DISCORD_WEBHOOK_URL = PROPS.getProperty('DISCORD_WEBHOOK_URL');
 const INTERNAL_SECRET = PROPS.getProperty('INTERNAL_SECRET');
@@ -216,17 +216,17 @@ function doPost(e) {
     const ss = SpreadsheetApp.openById(SHEET_ID);
 
     switch (data.action) {
-      case 'submit':                return handleSubmit(ss, data);
-      case 'updateStatus':          return handleUpdateStatus(ss, data);
-      case 'processPendingOffers':  return handleProcessPendingOffers(ss);
-      case 'getCities':             return handleGetCities(ss);
-      case 'updateCities':          return handleUpdateCities(ss, data);
-      case 'getVenues':             return handleGetVenues(ss);
-      case 'updateVenue':           return handleUpdateVenue(ss, data);
-      case 'getAnalytics':          return handleGetAnalytics(ss);
-      case 'syncData':              return handleSyncData(ss, data);
-      case 'health':                return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID });
-      default:                      return respond({ error: 'Unknown action' });
+      case 'submit': return handleSubmit(ss, data);
+      case 'updateStatus': return handleUpdateStatus(ss, data);
+      case 'processPendingOffers': return handleProcessPendingOffers(ss);
+      case 'getCities': return handleGetCities(ss);
+      case 'updateCities': return handleUpdateCities(ss, data);
+      case 'getVenues': return handleGetVenues(ss);
+      case 'updateVenue': return handleUpdateVenue(ss, data);
+      case 'getAnalytics': return handleGetAnalytics(ss);
+      case 'syncData': return handleSyncData(ss, data);
+      case 'health': return respond({ status: 'ok', timestamp: nowISO(), sheet: SHEET_ID });
+      default: return respond({ error: 'Unknown action' });
     }
   } catch (err) {
     notifyDiscord('⚠️ System Error', sanitize(err.toString(), 300), 15158332);
@@ -854,7 +854,7 @@ function createStripePaymentLink(amount, description, metadata) {
     };
     // Add metadata
     if (metadata) {
-      Object.keys(metadata).forEach(function(key) {
+      Object.keys(metadata).forEach(function (key) {
         linkPayload['metadata[' + key + ']'] = sanitize(String(metadata[key]), 100);
       });
     }
@@ -889,7 +889,7 @@ function createStripePaymentLink(amount, description, metadata) {
 function sendOfferEmail(data, offer, paymentLink, tid, customSubject) {
   if (!data.email) return false;
 
-  const perksHtml = (offer.perks || []).map(function(p) {
+  const perksHtml = (offer.perks || []).map(function (p) {
     return '<li style="padding:4px 0;color:#d1d5db;font-size:14px;">✓ ' + sanitize(p, 200) + '</li>';
   }).join('');
 
@@ -951,7 +951,7 @@ function sendOfferEmail(data, offer, paymentLink, tid, customSubject) {
     'Your Price: $' + offer.amount + ' (' + offer.boothRecommendation + ' Booth)',
     '',
     'What\'s included:',
-    (offer.perks || []).map(function(p) { return '  ✓ ' + p; }).join('\n'),
+    (offer.perks || []).map(function (p) { return '  ✓ ' + p; }).join('\n'),
     '',
     paymentLink ? 'Secure your spot: ' + paymentLink : 'Payment link will be sent shortly.',
     '',
