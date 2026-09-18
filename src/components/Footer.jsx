@@ -107,6 +107,9 @@ export default function Footer() {
       <div className="relative w-full flex flex-col items-center mt-auto overflow-hidden">
         <div className="w-full px-6 md:px-12 pb-4 md:pb-6 text-center md:text-left z-30">
           <p className="text-[6px] sm:text-[7px] md:text-[9px] tracking-[0.1em] md:tracking-[0.2em] text-white/40 md:text-white/20 uppercase font-bold">© 2026 MARKETPEACE. ALL RIGHTS RESERVED. &nbsp;&nbsp;|&nbsp;&nbsp; SUPPORT LOCAL.</p>
+          <p className="text-[6px] sm:text-[7px] md:text-[9px] tracking-[0.1em] md:tracking-[0.2em] text-white/30 md:text-white/15 uppercase font-medium mt-2">
+            Developed by <a href="mailto:isiraglobal@gmail.com" className="hover:text-[#0DB8D3] transition-colors underline">ISIRA Automations</a>
+          </p>
         </div>
         <img
           src="/assets/footer-market.png"
